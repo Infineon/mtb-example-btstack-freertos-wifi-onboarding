@@ -44,7 +44,9 @@
 #include "cy_retarget_io.h"
 #include <FreeRTOS.h>
 #include <task.h>
-#include "app_bt_cfg.h"
+#include "cycfg_bt_settings.h"
+#include "cycfg_gap.h"
+#include "app_platform_cfg.h"
 #include "wiced_bt_stack.h"
 #include "cycfg_gatt_db.h"
 #include "wifi_task.h"
@@ -76,7 +78,10 @@ uint16_t conn_id = 0;
  * processes Disconnection notification. It is used to check button
  * interrupt while the device is trying to connect to WiFi
  */
-bool button_pressed = false;
+volatile bool button_pressed = false;
+
+/* This enables RTOS aware debugging. */
+volatile int uxTopUsedPriority;
 
 /******************************************************************************
  *                              Function Prototypes
@@ -85,7 +90,6 @@ static wiced_result_t           app_management_callback(wiced_bt_management_evt_
                                       wiced_bt_management_evt_data_t *p_event_data);
 static wiced_bt_gatt_status_t   app_gatts_callback(wiced_bt_gatt_evt_t event,
                                       wiced_bt_gatt_event_data_t *p_data);
-void                            app_set_advertisement_data(void);
 static void                     application_init(void);
 static void                     gpio_interrupt_handler(void *handler_arg,
                                       cyhal_gpio_event_t event);
@@ -112,6 +116,9 @@ int main()
     /* Return status for EEPROM. */
     cy_en_em_eeprom_status_t eepromReturnValue;
 
+    /* This enables RTOS aware debugging in OpenOCD. */
+    uxTopUsedPriority = configMAX_PRIORITIES - 1;
+    
     /* Initialize the board support package */
     if(CY_RSLT_SUCCESS != cybsp_init())
     {
@@ -172,7 +179,6 @@ int main()
     CY_ASSERT(0) ;
 }
 
-
 /*******************************************************************************
 * Function Name: application_init
 ********************************************************************************
@@ -185,6 +191,7 @@ int main()
 *******************************************************************************/
 void application_init(void)
 {
+    wiced_result_t result;
     wiced_bt_gatt_status_t gatt_status;
 
     /* Return status for EEPROM. */
@@ -206,8 +213,11 @@ void application_init(void)
     /* Allow peer to pair */
     wiced_bt_set_pairable_mode(WICED_TRUE, false);
 
-    /* Set the advertising params and make the device discoverable */
-    app_set_advertisement_data();
+    result = wiced_bt_ble_set_raw_advertisement_data(CY_BT_ADV_PACKET_DATA_SIZE, cy_bt_adv_packet_data);
+    if(WICED_SUCCESS != result)
+    {
+        printf("Set ADV data failed\n");
+    }
 
     /* Determine if the EEPROM has a previously stored WiFi SSID value.
      * If it does, use the stored credentials to connect to WiFi.
@@ -233,48 +243,6 @@ void application_init(void)
 }
 
 /*******************************************************************************
-* Function Name: app_set_advertisement_data
-********************************************************************************
-* Summary:
-* This function sets the advertising data.
-*
-*******************************************************************************/
-void app_set_advertisement_data(void)
-{
-    wiced_result_t result;
-
-    wiced_bt_ble_advert_elem_t adv_elem[ADV_ELEMENTS];
-    uint8_t num_elem = 0;
-    uint8_t flag = BTM_BLE_GENERAL_DISCOVERABLE_FLAG | BTM_BLE_BREDR_NOT_SUPPORTED;
-    uint8_t custom_service_uuid[LEN_UUID_128] = {__UUID_SERVICE_CUSTOM_SERVICE};
-
-    /* First element is the advertisment flags */
-    adv_elem[num_elem].advert_type  = BTM_BLE_ADVERT_TYPE_FLAG;
-    adv_elem[num_elem].len          = sizeof(uint8_t);
-    adv_elem[num_elem].p_data       = &flag;
-    num_elem++;
-
-    /* Second element is the 128 bit custom UUID */
-    adv_elem[num_elem].advert_type  = BTM_BLE_ADVERT_TYPE_128SRV_COMPLETE;
-    adv_elem[num_elem].len          = LEN_UUID_128;
-    adv_elem[num_elem].p_data       = custom_service_uuid;
-    num_elem++;
-
-    /* Final element is the device name */
-    adv_elem[num_elem].advert_type  = BTM_BLE_ADVERT_TYPE_NAME_COMPLETE;
-    adv_elem[num_elem].len          = app_gap_device_name_len;
-    adv_elem[num_elem].p_data       = (uint8_t *)app_gap_device_name;
-    num_elem++;
-
-    result = wiced_bt_ble_set_raw_advertisement_data(num_elem, adv_elem);
-    if(WICED_SUCCESS != result)
-    {
-        printf("Set ADV data failed\n");
-    }
-}
-
-
-/*******************************************************************************
 * Function Name: app_management_callback
 ********************************************************************************
 * Summary:
@@ -291,7 +259,8 @@ void app_set_advertisement_data(void)
 wiced_result_t app_management_callback(wiced_bt_management_evt_t event,
                                    wiced_bt_management_evt_data_t *p_event_data)
 {
-    wiced_result_t                      result = WICED_BT_SUCCESS;
+    wiced_result_t result            = WICED_BT_SUCCESS;
+    wiced_bt_device_address_t bda    = { 0 };
 
     printf("Bluetooth Management Event: \t");
     printf(get_bt_event_name(event));
@@ -301,6 +270,12 @@ wiced_result_t app_management_callback(wiced_bt_management_evt_t event,
     {
     case BTM_ENABLED_EVT:
         /* Initialize the application */
+        wiced_bt_set_local_bdaddr((uint8_t *)cy_bt_device_address, BLE_ADDR_PUBLIC);
+        /* Bluetooth is enabled */
+        wiced_bt_dev_read_local_addr(bda);
+        printf("Local Bluetooth Address: ");
+        print_bd_address(bda);
+
         application_init();
         break;
 
@@ -590,6 +565,7 @@ wiced_bt_gatt_status_t app_gatts_req_write_handler(uint16_t conn_id,
 wiced_bt_gatt_status_t app_gatt_connect_callback(wiced_bt_gatt_connection_status_t *p_conn_status)
 {
     wiced_bt_gatt_status_t status = WICED_BT_GATT_ERROR;
+    wiced_result_t result;
 
     /* Check whether it is a connect event or disconnect event. If the device
     has been disconnected then restart advertisement */
@@ -615,8 +591,11 @@ wiced_bt_gatt_status_t app_gatt_connect_callback(wiced_bt_gatt_connection_status
 
             conn_id = 0;
 
-            /* Set the advertising params and make the device discoverable */
-            app_set_advertisement_data();
+            result = wiced_bt_ble_set_raw_advertisement_data(CY_BT_ADV_PACKET_DATA_SIZE, cy_bt_adv_packet_data);
+            if(WICED_SUCCESS != result)
+            {
+                printf("Set ADV data failed\n");
+            }
 
             wiced_bt_start_advertisements(BTM_BLE_ADVERT_UNDIRECTED_LOW, 0, NULL);
         }

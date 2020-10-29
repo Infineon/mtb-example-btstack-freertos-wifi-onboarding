@@ -28,10 +28,18 @@
 # Basic Configuration
 ################################################################################
 
-# Target board/hardware
+# Target board/hardware (BSP).
+# To change the target, it is recommended to use the Library manager 
+# ('make modlibs' from command line), which will also update Eclipse IDE launch 
+# configurations. If TARGET is manually edited, ensure TARGET_<BSP>.mtb with a 
+# valid URL exists in the application, run 'make getlibs' to fetch BSP contents
+# and update or regenerate launch configurations for your IDE.
 TARGET=CY8CPROTO-062-4343W
 
 # Name of application (used to derive name of final linked file).
+# 
+# If APPNAME is edited, ensure to update or regenerate launch 
+# configurations for your IDE.
 APPNAME=mtb-example-anycloud-ble-wifi-onboarding
 
 # Name of toolchain to use. Options include:
@@ -45,8 +53,12 @@ TOOLCHAIN=GCC_ARM
 
 # Default build configuration. Options include:
 #
-# Debug   -- build with minimal optimizations, focus on debugging.
+# Debug -- build with minimal optimizations, focus on debugging.
 # Release -- build with full optimizations
+# Custom -- build with custom configuration, set the optimization flag in CFLAGS
+# 
+# If CONFIG is manually edited, ensure to update or regenerate launch configurations 
+# for your IDE.
 CONFIG=Debug
 
 # If set to "true" or "1", display full command-lines when building.
@@ -67,7 +79,7 @@ VERBOSE=
 # ... then code in directories named COMPONENT_foo and COMPONENT_bar will be
 # added to the build
 #
-COMPONENTS=FREERTOS LWIP MBEDTLS WICED_BLE CUSTOM_DESIGN_MODUS
+COMPONENTS=FREERTOS LWIP MBEDTLS WICED_BLE CUSTOM_DESIGN_MODUS WCM SECURE_SOCKETS
 
 # Like COMPONENTS, but disable optional code that was enabled by default.
 DISABLE_COMPONENTS= BSP_DESIGN_MODUS
@@ -80,13 +92,13 @@ SOURCES=
 
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
-INCLUDES=
+INCLUDES=./configs
 
 # Custom configuration of mbedtls library.
-MBEDTLSFLAGS = MBEDTLS_USER_CONFIG_FILE='"configs/mbedtls_user_config.h"'
+MBEDTLSFLAGS = MBEDTLS_USER_CONFIG_FILE='"mbedtls_user_config.h"'
 
 # Add additional defines to the build process (without a leading -D).
-DEFINES=$(MBEDTLSFLAGS) CYBSP_WIFI_CAPABLE CY_RETARGET_IO_CONVERT_LF_TO_CRLF CY_RTOS_AWARE CY_SD_HOST_CLK_RAMP_UP_TIME_MS_WAKEUP=0
+DEFINES=$(MBEDTLSFLAGS) CYBSP_WIFI_CAPABLE CY_RETARGET_IO_CONVERT_LF_TO_CRLF CY_RTOS_AWARE
 
 # CY8CPROTO-062-4343W board shares the same GPIO for the user button (USER BTN1)
 # and the CYW4343W host wake up pin. Since this example uses the GPIO for
@@ -142,9 +154,18 @@ POSTBUILD=
 # This controls where automatic source code discovery looks for code.
 CY_APP_PATH=
 
-# Relative path to the "base" library. It provides the core makefile build
-# infrastructure.
-CY_BASELIB_PATH=libs/psoc6make
+# Relative path to the shared repo location.
+#
+# All .mtb files have the format, <URI>#<COMMIT>#<LOCATION>. If the <LOCATION> field 
+# begins with $$ASSET_REPO$$, then the repo is deposited in the path specified by 
+# the CY_GETLIBS_SHARED_PATH variable. The default location is one directory level 
+# above the current app directory.
+# This is used with CY_GETLIBS_SHARED_NAME variable, which specifies the directory name.
+CY_GETLIBS_SHARED_PATH=../
+
+# Directory name of the shared repo location.
+#
+CY_GETLIBS_SHARED_NAME=mtb_shared
 
 # Absolute path to the compiler's "bin" directory.
 #
@@ -163,7 +184,7 @@ CY_TOOLS_PATHS ?= $(wildcard \
 
 # If you install ModusToolbox IDE in a custom location, add the path to its
 # "tools_X.Y" folder (where X and Y are the version number of the tools
-# folder).
+# folder). Make sure you use forward slashes.
 CY_TOOLS_PATHS+=
 
 # Default to the newest installed tools folder, or the users override (if it's
@@ -171,7 +192,7 @@ CY_TOOLS_PATHS+=
 CY_TOOLS_DIR=$(lastword $(sort $(wildcard $(CY_TOOLS_PATHS))))
 
 ifeq ($(CY_TOOLS_DIR),)
-$(error Unable to find any of the available CY_TOOLS_PATHS -- $(CY_TOOLS_PATHS))
+$(error Unable to find any of the available CY_TOOLS_PATHS -- $(CY_TOOLS_PATHS). On Windows, use forward slashes.)
 endif
 
 $(info Tools Directory: $(CY_TOOLS_DIR))

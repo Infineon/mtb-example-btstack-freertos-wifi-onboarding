@@ -57,7 +57,6 @@
 
 /* EEPROM Configuration details. */
 #define SIMPLE_MODE             (0u) 
-#define Em_EEPROM_PHYSICAL_SIZE (1024u)
 #define EEPROM_SIZE             (512u)
 #define BLOCKING_WRITE          (1u)
 #define REDUNDANT_COPY          (1u)
@@ -91,7 +90,7 @@ enum wifi_task_notifications
  *                                Structures
  ******************************************************************************/
 /* Structure to store WiFi details that goes into EEPROM */
-typedef struct __attribute__((__packed__))
+typedef __PACKED_STRUCT
 {
     uint8_t wifi_ssid[CY_WCM_MAX_SSID_LEN];
     uint8_t ssid_len;

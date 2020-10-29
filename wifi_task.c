@@ -48,6 +48,7 @@
 #include "cycfg_gatt_db.h"
 #include "wiced_bt_stack.h"
 #include "app_utils.h"
+#include "cycfg_gap.h"
 
 /******************************************************************************
  *                             Global Variables
@@ -63,17 +64,14 @@ CY_ALIGN(CY_EM_EEPROM_FLASH_SIZEOF_ROW)
 const uint8_t EepromStorage[CY_EM_EEPROM_GET_PHYSICAL_SIZE(EEPROM_SIZE, 
 SIMPLE_MODE, WEAR_LEVELLING_FACTOR, REDUNDANT_COPY)] = {0u};
 
-// /* EEPROM storage in user flash or emulated EEPROM flash. */
-// const uint8_t EepromStorage[Em_EEPROM_PHYSICAL_SIZE] = {0u};
-
 /* EEPROM configuration and context structure. */
 cy_stc_eeprom_config_t Em_EEPROM_config =
 {
-	.eepromSize = EEPROM_SIZE,
-	.blockingWrite = BLOCKING_WRITE,
-	.redundantCopy = REDUNDANT_COPY,
-	.wearLevelingFactor = WEAR_LEVELLING_FACTOR,
-	.userFlashStartAddr = (uint32_t)EepromStorage,
+    .eepromSize = EEPROM_SIZE,
+    .blockingWrite = BLOCKING_WRITE,
+    .redundantCopy = REDUNDANT_COPY,
+    .wearLevelingFactor = WEAR_LEVELLING_FACTOR,
+    .userFlashStartAddr = (uint32_t)EepromStorage,
 };
 
 cy_stc_eeprom_context_t Em_EEPROM_context;
@@ -96,7 +94,6 @@ extern bool button_pressed;
 /* Task Handles for WiFi Task */
 extern TaskHandle_t wifi_task_handle;
 
-extern void app_set_advertisement_data(void);
 extern gatt_db_lookup_table_t * app_get_attribute(uint16_t handle);
 
 /*******************************************************************************
@@ -208,6 +205,11 @@ void wifi_task(void * arg)
 
             printf("Starting scan with SSID: %s\n", scan_filter.param.SSID);
             result = cy_wcm_start_scan(scan_callback, NULL, &scan_filter);
+
+            if(result)
+            {
+                printf("Start scan failed\n");
+            }
         }
         /* If the scan is complete then proceed for connection */
         else if(NOTIF_SCAN_COMPLETE == ulNotifiedValue)
@@ -266,8 +268,7 @@ void wifi_task(void * arg)
                  * come from BLE client
                  */
                 if ((conn_id != 0) &&
-                    ((app_custom_service_wifi_connection_client_char_config[0] & GATT_CLIENT_CONFIG_NOTIFICATION) &&
-                    NOTIF_GATT_DB == ulNotifiedValue))
+                    ((app_custom_service_wifi_connection_client_char_config[0] & GATT_CLIENT_CONFIG_NOTIFICATION)))
                 {
                     wiced_bt_gatt_send_notification(conn_id, HDLC_CUSTOM_SERVICE_WIFI_CONNECTION_VALUE,
                                                     sizeof(app_custom_service_wifi_connection[0]),
@@ -285,7 +286,12 @@ void wifi_task(void * arg)
                     printf("Starting BLE ADV. Connect to BLE and provide"
                             "proper credentials\n");
                     /* Set the advertising params and make the device discoverable */
-                    app_set_advertisement_data();
+                    result = wiced_bt_ble_set_raw_advertisement_data(CY_BT_ADV_PACKET_DATA_SIZE,
+                            cy_bt_adv_packet_data);
+                    if(WICED_SUCCESS != result)
+                    {
+                        printf("Set ADV data failed\n");
+                    }
 
                     wiced_bt_start_advertisements(BTM_BLE_ADVERT_UNDIRECTED_LOW, 0, NULL);
                 }
@@ -294,22 +300,22 @@ void wifi_task(void * arg)
         /* Task notification for disconnection */
         else if((NOTIF_DISCONNECT_GATT_DB == ulNotifiedValue) || (NOTIF_DISCONNECT_BTN == ulNotifiedValue))
         {
-        	if(NOTIF_DISCONNECT_BTN == ulNotifiedValue)
-        	{
-				printf("Deleting Wi-Fi data from EMEEPROM\n");
-				/* Set the data to 0*/
-				memset(&wifi_details.wifi_ssid[0], 0, sizeof(wifi_details));
-				/* Write data to EEPROM. */
-				eepromReturnValue = Cy_Em_EEPROM_Write(LOGICAL_EEPROM_START,
-										(void *)&wifi_details.wifi_ssid[0],
-										sizeof(wifi_details),
-										&Em_EEPROM_context);
+            if(NOTIF_DISCONNECT_BTN == ulNotifiedValue)
+            {
+                printf("Deleting Wi-Fi data from EMEEPROM\n");
+                /* Set the data to 0*/
+                memset(&wifi_details, 0, sizeof(wifi_details));
+                /* Write data to EEPROM. */
+                eepromReturnValue = Cy_Em_EEPROM_Write(LOGICAL_EEPROM_START,
+                                        (void *)&wifi_details.wifi_ssid[0],
+                                        sizeof(wifi_details),
+                                        &Em_EEPROM_context);
 
-				 if(CY_EM_EEPROM_SUCCESS != eepromReturnValue)
-				 {
-					printf("Failed to write to EMEEPROM \n");
-				 }
-        	}
+                 if(CY_EM_EEPROM_SUCCESS != eepromReturnValue)
+                 {
+                    printf("Failed to write to EMEEPROM \n");
+                 }
+            }
 
             printf("Disconnecting Wi-Fi\n");
             result = cy_wcm_disconnect_ap();

@@ -2,11 +2,23 @@
 
 This example uses the Arm® Cortex®-M4 (CM4) CPU of PSoC® 6 MCU to communicate with the CYW43xxx combo devices and control the Wi-Fi and BLE functionality. It uses BLE on the combo device to help connect the Wi-Fi to the AP. It also enables low-power mode on Wi-Fi and BLE.
 
+[Provide feedback on this Code Example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzAyMjMiLCJTcGVjIE51bWJlciI6IjAwMi0zMDIyMyIsIkRvYyBUaXRsZSI6IkFueUNsb3VkOiBXaS1GaSBPbmJvYXJkaW5nIFVzaW5nIEJMRSIsInJpZCI6ImFta2EiLCJEb2MgdmVyc2lvbiI6IjIuMC4wIiwiRG9jIExhbmd1YWdlIjoiRW5nbGlzaCIsIkRvYyBEaXZpc2lvbiI6Ik1DRCIsIkRvYyBCVSI6IklDVyIsIkRvYyBGYW1pbHkiOiJQU09DIn0=)
+
 ## Requirements
 
-- [ModusToolbox™ software](https://www.cypress.com/products/modustoolbox-software-environment) v2.1
+- [ModusToolbox™ software](https://www.cypress.com/products/modustoolbox-software-environment) v2.2
+
+   **Note:** This code example version requires ModusToolbox software version 2.2 or later and is not backward compatible with v2.1 or older versions. If you cannot move to ModusToolbox v2.2, use the latest compatible version of this example: [latest-v1.X](https://github.com/cypresssemiconductorco/mtb-example-anycloud-ble-wifi-onboarding/tree/latest-v1.X).
+
+- Board Support Package (BSP) minimum required version: 2.0.0
 - Programming Language: C
-- Associated Parts: [PSoC® 6 MCU](http://www.cypress.com/PSoC6) parts with BLE and SDIO, [CYW43012](https://www.cypress.com/documentation/product-overviews/cypress-cyw43012), [CYW4343W](https://www.cypress.com/documentation/datasheets/cyw4343w-single-chip-80211-bgn-macbasebandradio-bluetooth-41)
+- Associated Parts: [PSoC® 6 MCU](http://www.cypress.com/PSoC6) parts with CYW43012, CYW4343W
+
+## Supported Toolchains (make variable 'TOOLCHAIN')
+
+- GNU Arm Embedded Compiler v9.3.1 (GCC_ARM) - Default value of `TOOLCHAIN`
+- IAR C/C++ compiler v8.42.2 (IAR)
+
 
 ## Supported Kits
 
@@ -158,11 +170,13 @@ This example uses the kit’s default configuration. See the respective kit guid
        **Figure 4. CySmart App Flow**
       ![Figure 4](./images/figure-4.png)
 
-6. Once the Wi-Fi SSID and password is provided by the client it is stored in the EEPROM. To delete this data the user needs to press SW3.
+6. Once the Wi-Fi SSID and password is provided by the client it is stored in the EEPROM. To delete this data the user needs to press User Button.
 
 ## Debugging
 
-You can debug the example to step through the code. In the IDE, use the **mtb-example-anycloud-ble-wifi-onboarding Debug (KitProg3)** configuration in the **Quick Panel**. For more details, see the "Program and Debug" section in the Eclipse IDE for ModusToolbox User Guide: *{ModusToolbox install directory}/ide_{version}/docs/mt_ide_user_guide.pdf*.
+You can debug the example to step through the code. In the IDE, use the **\<Application Name> Debug (KitProg3_MiniProg4)** configuration in the **Quick Panel**. For more details, see the "Program and Debug" section in the [Eclipse IDE for ModusToolbox User Guide](https://www.cypress.com/MTBEclipseIDEUserGuide).
+
+**Note:** **(Only while debugging)** On the CM4 CPU, some code in `main()` may execute before the debugger halts at the beginning of `main()`. This means that some code executes twice - once before the debugger stops execution, and again after the debugger resets the program counter to the beginning of `main()`. See [KBA231071](https://community.cypress.com/docs/DOC-21143) to learn about this and for the workaround.
 
 ## Design and Implementation
 
@@ -205,7 +219,7 @@ The Wi-Fi SSID and password are exchanged using custom GATT service and characte
 | `app_gatts_req_write_handler` | Handles GATT write request events from the stack |
 | `app_gatt_connect_callback` | Handles GATT connect request events from the stack |
 | `app_gatts_req_cb` | Redirects GATT attribute requests to the appropriate functions |
-| `app_gatts_callback` | This is the callback function for GATT events and that it was registered when the GATT database was initialized in the BTM enabled event|
+| `app_gatts_callback` | This is the callback function for GATT events that was registered when the GATT database was initialized in the BTM enabled event.|
 | `gpio_interrupt_handler` | GPIO interrupt service routine. This function detects button presses, deletes the Wi-Fi data from the EEPROM, and starts BLE ADV. |
 
 **Table 3. Functions in *wifi_task.c***
@@ -280,10 +294,10 @@ Document Title: *CE230223* - *mtb-example-anycloud-ble-wifi-onboarding*
 | Version | Description of Change |
 | ------- | --------------------- |
 | 1.0.0   | New code example      |
-
+| 2.0.0   | Major update to support ModusToolbox software v2.2<br> This version is not backward compatible with ModusToolbox software v2.1  |
 ------
 
-![Banner](images/banner.png)
+![ifx-cy-banner.png](images/ifx-cy-banner.png)
 
 -------------------------------------------------------------------------------
 

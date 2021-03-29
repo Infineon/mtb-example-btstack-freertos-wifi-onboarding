@@ -44,6 +44,9 @@
 #include "cy_retarget_io.h"
 #include <FreeRTOS.h>
 #include <task.h>
+#include "wiced_bt_dev.h"
+#include "wiced_bt_ble.h"
+#include "wiced_bt_gatt.h"
 #include "cycfg_bt_settings.h"
 #include "cycfg_gap.h"
 #include "app_platform_cfg.h"

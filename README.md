@@ -1,14 +1,14 @@
-# AnyCloud: Wi-Fi Onboarding Using BLE
+# AnyCloud: Wi-Fi Onboarding Using Bluetooth LE
 
-This example uses the Arm® Cortex®-M4 (CM4) CPU of PSoC® 6 MCU to communicate with the CYW43xxx combo devices and control the Wi-Fi and BLE functionality. It uses BLE on the combo device to help connect the Wi-Fi to the AP. It also enables low-power mode on Wi-Fi and BLE.
+This example uses the Arm® Cortex®-M4 (CM4) CPU of PSoC® 6 MCU to communicate with the CYW43xxx combo devices and control the Wi-Fi and Bluetooth LE functionality. It uses Bluetooth LE on the combo device to help connect the Wi-Fi to the AP. It also enables low-power mode on Wi-Fi and Bluetooth LE.
 
-[Provide feedback on this Code Example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzAyMjMiLCJTcGVjIE51bWJlciI6IjAwMi0zMDIyMyIsIkRvYyBUaXRsZSI6IkFueUNsb3VkOiBXaS1GaSBPbmJvYXJkaW5nIFVzaW5nIEJMRSIsInJpZCI6ImFta2EiLCJEb2MgdmVyc2lvbiI6IjIuMS4wIiwiRG9jIExhbmd1YWdlIjoiRW5nbGlzaCIsIkRvYyBEaXZpc2lvbiI6Ik1DRCIsIkRvYyBCVSI6IklDVyIsIkRvYyBGYW1pbHkiOiJQU09DIn0=)
+[Provide feedback on this Code Example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzAyMjMiLCJTcGVjIE51bWJlciI6IjAwMi0zMDIyMyIsIkRvYyBUaXRsZSI6IkFueUNsb3VkOiBXaS1GaSBPbmJvYXJkaW5nIFVzaW5nIEJsdWV0b290aCBMRSIsInJpZCI6ImFta2EiLCJEb2MgdmVyc2lvbiI6IjMuMC4wIiwiRG9jIExhbmd1YWdlIjoiRW5nbGlzaCIsIkRvYyBEaXZpc2lvbiI6Ik1DRCIsIkRvYyBCVSI6IklDVyIsIkRvYyBGYW1pbHkiOiJQU09DIn0=)
 
 ## Requirements
 
-- [ModusToolbox™ software](https://www.cypress.com/products/modustoolbox-software-environment) v2.2
+- [ModusToolbox™ software](https://www.cypress.com/products/modustoolbox-software-environment) v2.3 (with patch 2.3.1)
 
-   **Note:** This code example version requires ModusToolbox software version 2.2 or later and is not backward compatible with v2.1 or older versions. If you cannot move to ModusToolbox v2.2, use the latest compatible version of this example: [latest-v1.X](https://github.com/cypresssemiconductorco/mtb-example-anycloud-ble-wifi-onboarding/tree/latest-v1.X).
+   **Note:** This code example version requires ModusToolbox software version 2.3 (patch 2.3.1) (with or later and is not backward compatible with v2.2 or older versions. If you cannot move to ModusToolbox v2.3, use the latest compatible version of this example: [latest-v2.X](https://github.com/cypresssemiconductorco/mtb-example-anycloud-ble-wifi-onboarding/tree/latest-v2.X).
 
 - Board Support Package (BSP) minimum required version: 2.0.0
 - Programming Language: C
@@ -31,9 +31,9 @@ This example uses the kit’s default configuration. See the respective kit guid
 
 ## Software Setup
 
-* This code example consists of two parts: a BLE GAP Peripheral and a BLE GAP Central.
+* This code example consists of two parts: a Bluetooth LE GAP Peripheral and a Bluetooth LE GAP Central.
 
-   For the BLE GAP Central, download and install the CySmart™ app for [iOS](https://itunes.apple.com/us/app/cysmart/id928939093?mt=8) or [Android](https://play.google.com/store/apps/details?id=com.cypress.cysmart&hl=en).
+   For the Bluetooth LE GAP Central, download and install the CySmart™ app for [iOS](https://itunes.apple.com/us/app/cysmart/id928939093?mt=8) or [Android](https://play.google.com/store/apps/details?id=com.cypress.cysmart&hl=en).
 
    You can also use the [CySmart Host Emulation Tool](http://www.cypress.com/go/cysmart) Windows PC application if you have access to the [CY5677 CySmart BLE 4.2 USB Dongle](http://www.cypress.com/documentation/development-kitsboards/cy5677-cysmart-bluetooth-low-energy-ble-42-usb-dongle).
 
@@ -160,7 +160,7 @@ This example uses the kit’s default configuration. See the respective kit guid
 
     3. Press the reset switch on the kit to start sending advertisements.
 
-    4. Swipe down on the CySmart app home screen to start scanning for BLE Peripherals. Your device (“bleProv”) appears in the CySmart app home screen. Select your device to establish a BLE connection.
+    4. Swipe down on the CySmart app home screen to start scanning for Bluetooth LE Peripherals. Your device (“bleProv”) appears in the CySmart app home screen. Select your device to establish a Bluetooth LE connection.
 
     5. Select the **GATT DB** Profile from the carousel view then select **Unknown Service**.
 
@@ -183,7 +183,7 @@ You can debug the example to step through the code. In the IDE, use the **\<Appl
 
 ### Introduction
 
-In this example, BLE provides a mechanism for the device to connect to a Wi-Fi AP by providing the Wi-Fi SSID and password in a secure manner. The Wi-Fi credentials are stored in EEPROM so that the device can use this data upon reset to connect to an AP without requiring BLE intervention. Note that the data stored in the EEPROM is unencrypted
+In this example, Bluetooth LE provides a mechanism for the device to connect to a Wi-Fi AP by providing the Wi-Fi SSID and password in a secure manner. The Wi-Fi credentials are stored in EEPROM so that the device can use this data upon reset to connect to an AP without requiring Bluetooth LE intervention. Note that the data stored in the EEPROM is unencrypted
 
 This example also enables low-power modes for BT.
 
@@ -193,7 +193,7 @@ The Wi-Fi SSID and password are exchanged using custom GATT service and characte
 
 |**File Name**            |**Comments**      |
 | ------------------------|---------------------------------------|
-| *main.c* | Has the application entry function. It initializes the UART for debugging and then initializes the controller stack. It handles BLE initialization, configuration, advertisement, and responses to BLE events.|
+| *main.c* | Has the application entry function. It initializes the UART for debugging and then initializes the controller stack. It handles Bluetooth LE initialization, configuration, advertisement, and responses to Bluetooth LE events.|
 | *wifi_task.c* | It contains the wifi_task which helps to connect/disconnect to/from the Wi-Fi AP based on the Wi-Fi SSID and password provided.|
 | *app_bt_cfg.c* | Runtime Bluetooth stack configuration parameters|
 | *app_utils.c* | Has some utility functions which help to convert return and status values to meaningful text|
@@ -221,7 +221,7 @@ The Wi-Fi SSID and password are exchanged using custom GATT service and characte
 | `app_gatt_connect_callback` | Handles GATT connect request events from the stack |
 | `app_gatts_req_cb` | Redirects GATT attribute requests to the appropriate functions |
 | `app_gatts_callback` | This is the callback function for GATT events that was registered when the GATT database was initialized in the BTM enabled event.|
-| `gpio_interrupt_handler` | GPIO interrupt service routine. This function detects button presses, deletes the Wi-Fi data from the EEPROM, and starts BLE ADV. |
+| `gpio_interrupt_handler` | GPIO interrupt service routine. This function detects button presses, deletes the Wi-Fi data from the EEPROM, and starts Bluetooth LE ADV. |
 
 **Table 3. Functions in *wifi_task.c***
 
@@ -230,15 +230,15 @@ The Wi-Fi SSID and password are exchanged using custom GATT service and characte
 | `wifi_task` | Initializes the WCM module and connects/disconnects to/from the AP |
 | `scan_callback` | The callback function which accumulates the scan results |
 
-### BLE GATT Custom Service
+### Bluetooth LE GATT Custom Service
 
-This example uses custom GATT service and characteristics to communicate with the BLE GATT client. The GATT database was created using the **Bluetooth Configurator**. The configurator generates files called *cycfg_gatt_db.c* and *cycfg_gatt_db.h* which contain the GATT DB. See the *{ModusToolbox install directory}/tools_{version}/bt-configurator/docs/bt-configurator.pdf* to learn to create a GATT database.
+This example uses custom GATT service and characteristics to communicate with the Bluetooth LE GATT client. The GATT database was created using the **Bluetooth Configurator**. The configurator generates files called *cycfg_gatt_db.c* and *cycfg_gatt_db.h* which contain the GATT DB. See the *{ModusToolbox install directory}/tools_{version}/bt-configurator/docs/bt-configurator.pdf* to learn to create a GATT database.
 
 The following custom characteristics are used in this example:
 
-**WiFi SSID:** Provides the Wi-Fi SSID from BLE GATT client to the server. The maximum size is 32 as Wi-Fi limits the SSID name to 32 characters.
+**WiFi SSID:** Provides the Wi-Fi SSID from Bluetooth LE GATT client to the server. The maximum size is 32 as Wi-Fi limits the SSID name to 32 characters.
 
-**WiFi Password:** Provides the Wi-Fi password from the BLE GATT client to the server. The minimum size is 8 because Wi-Fi encryption requires a minimum of 8 characters for password.
+**WiFi Password:** Provides the Wi-Fi password from the Bluetooth LE GATT client to the server. The minimum size is 8 because Wi-Fi encryption requires a minimum of 8 characters for password.
 
 **WiFi Connect:** A boolean characteristic that is used to connect and disconnect from the Wi-Fi AP. This has a Cleint Characteristic Configuration Descriptor (CCCD) attached with it. Whenever there is a successful connection it will send a notification value of 1 otherwise it will send a notification value of 0 if notifications are enabled.
 
@@ -252,7 +252,7 @@ This section explains the ModusToolbox resources and their configuration as used
 - **Device Configurator:** The Device Configurator is used to enable/configure the peripherals and the pins used in the application. See the
 [Device Configurator Guide](https://www.cypress.com/ModusToolboxDeviceConfig).
 
-- **Bluetooth Configurator:** The Bluetooth Configurator is used for generating/modifying the BLE GATT database. See the
+- **Bluetooth Configurator:** The Bluetooth Configurator is used for generating/modifying the Bluetooth LE GATT database. See the
 [Bluetooth Configurator Guide](https://www.cypress.com/ModusToolboxBLEConfig).
 
 ## Related Resources
@@ -274,8 +274,8 @@ This section explains the ModusToolbox resources and their configuration as used
 | [CYW9P62S1-43438EVB-01](https://www.cypress.com/CYW9P62S1-43438EVB-01) PSoC 62S1 Wi-Fi BT Pioneer Kit | [CYW9P62S1-43012EVB-01](https://www.cypress.com/CYW9P62S1-43012EVB-01) PSoC 62S1 Wi-Fi BT Pioneer Kit |
 |  CYSBSYSKIT-DEV-01 Rapid IoT Connect Developer Kit |
 | **Libraries**                                                 |                                                              |
-| PSoC 6 Peripheral Driver Library (PDL) and docs                    | [psoc6pdl](https://github.com/cypresssemiconductorco/psoc6pdl) on GitHub |
-| Cypress Hardware Abstraction Layer (HAL) Library and docs          | [psoc6hal](https://github.com/cypresssemiconductorco/psoc6hal) on GitHub |
+| PSoC 6 Peripheral Driver Library (PDL) and docs  | [mtb-pdl-cat1](https://github.com/cypresssemiconductorco/mtb-pdl-cat1) on GitHub |
+| Cypress Hardware Abstraction Layer (HAL) Library and docs    | [mtb-hal-cat1](https://github.com/cypresssemiconductorco/mtb-hal-cat1) on GitHub |
 | RetargetIO - A utility library to retarget the standard input/output (STDIO) messages to a UART port | [retarget-io](https://github.com/cypresssemiconductorco/retarget-io) on GitHub |
 | freeRTOS library and docs                                    | [freeRTOS](https://github.com/cypresssemiconductorco/freertos) on GitHub |
 | **Middleware**                                               |                                                              |
@@ -294,6 +294,7 @@ Document Title: *CE230223* - *mtb-example-anycloud-ble-wifi-onboarding*
 | 1.0.0   | New code example      |
 | 2.0.0   | Major update to support ModusToolbox software v2.2<br> This version is not backward compatible with ModusToolbox software v2.1  |
 | 2.1.0   | Added support for CYSBSYSKIT-DEV-01|
+| 3.0.0   | BTSTACK version updated to 3.0<br>This update required that the example be used with ModusToolbox sofware 2.3 (with patch 2.3.1)|
 ------
 
 ![ifx-cy-banner.png](images/ifx-cy-banner.png)

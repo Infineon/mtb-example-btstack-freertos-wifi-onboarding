@@ -50,6 +50,7 @@
 #include "wiced_bt_stack.h"
 #include "app_utils.h"
 #include "cycfg_gap.h"
+#include "wiced_memory.h"
 
 /******************************************************************************
  *                             Global Variables
@@ -77,6 +78,9 @@ cy_stc_eeprom_config_t Em_EEPROM_config =
 
 cy_stc_eeprom_context_t Em_EEPROM_context;
 
+/* Variable to be used to store the WiFi credentials which can be copied to
+ * NVRAM
+ */
 wifi_details_t wifi_details;
 
 /******************************************************************************
@@ -95,13 +99,11 @@ extern bool button_pressed;
 /* Task Handles for WiFi Task */
 extern TaskHandle_t wifi_task_handle;
 
-extern gatt_db_lookup_table_t * app_get_attribute(uint16_t handle);
-
 /*******************************************************************************
 * Function Name: wifi_task
 ********************************************************************************
 * Summary:
-* This function initializes the WCM module and connects/disconnects to the WIFI AP
+* This function initializes the WCM module and handles task notifications
 *
 *******************************************************************************/
 void wifi_task(void * arg)
@@ -126,6 +128,7 @@ void wifi_task(void * arg)
     /* Initialize WCM */
     printf("\n");
     result = cy_wcm_init(&wifi_config);
+    printf("\n");
     if(CY_RSLT_SUCCESS != result)
     {
         printf("Failed to initialize Wi-Fi\n");
@@ -135,93 +138,66 @@ void wifi_task(void * arg)
     while(true)
     {
         /* Wait for a notification */
-        xTaskNotifyWait( 0x00,      /* Don't clear any notification bits on entry. */
-                         UINT32_MAX, /* Reset the notification value to 0 on exit. */
+        xTaskNotifyWait( 0x00,      /* Don't clear any notification bits on
+                                       entry. */
+                         UINT32_MAX, /* Reset the notification value to 0 on
+                                        exit. */
                          &ulNotifiedValue, /* Notified value pass out in
                                               ulNotifiedValue. */
                          portMAX_DELAY );  /* Block indefinitely. */
 
-        /* Check if the WiFi credentials needs to be taken from GATT DB or EMEEPROM */
-        if((NOTIF_GATT_DB == ulNotifiedValue) || (NOTIF_EMEEPROM == ulNotifiedValue))
+        /* Check if the notification value has the scan bit set. In some cases both
+         * the scan bit and connect bit are set. In both the cases we start with
+         * the scan, pass the notification value to the scan callback and if
+         * the connect bit is also set then the scan callback will pass the
+         * connect message to this task and this task will try and connect to
+         * the WiFi network. If the notification value passed to the scan
+         * callback contains only the scan bit then it will try and send
+         * GATT notifications to the BLE client
+         */
+        if(NOTIF_SCAN & ulNotifiedValue)
         {
-            /* Set the WiFi Connection parameters structure to 0 before copying
-             * data */
-            memset(&wifi_conn_param, 0, sizeof(cy_wcm_connect_params_t));
-
-            /* Credentials present in EMEEPROM */
-            if(NOTIF_EMEEPROM == ulNotifiedValue)
-            {
-                printf("Getting credentials from EMEEPROM\n");
-                memcpy(wifi_conn_param.ap_credentials.SSID, &wifi_details.wifi_ssid[0],
-                                                            wifi_details.ssid_len);
-
-                memcpy(wifi_conn_param.ap_credentials.password, &wifi_details.wifi_password[0],
-                                                                wifi_details.password_len);
-            }
-            /* Credentials obtained through BLE */
-            else if(NOTIF_GATT_DB == ulNotifiedValue)
-            {
-                /* Copy the SSID and password type from GATT DB */
-                gatt_db_lookup_table_t *puAttribute;
-
-                /* Get the right address for the WiFi SSID handle in Gatt DB */
-                puAttribute = app_get_attribute(HDLC_CUSTOM_SERVICE_WIFI_SSID_VALUE);
-
-                memcpy(wifi_conn_param.ap_credentials.SSID, puAttribute->p_data,
-                                                            puAttribute->cur_len);
-
-                /* Get the right address for the WiFi password handle in Gatt DB */
-                puAttribute = app_get_attribute(HDLC_CUSTOM_SERVICE_WIFI_PASSWORD_VALUE);
-
-                memcpy(wifi_conn_param.ap_credentials.password, puAttribute->p_data,
-                                                            puAttribute->cur_len);
-
-                memcpy(&wifi_details.wifi_ssid[0], wifi_conn_param.ap_credentials.SSID,
-                                        strlen((char *)wifi_conn_param.ap_credentials.SSID));
-
-                memcpy(&wifi_details.wifi_password[0], wifi_conn_param.ap_credentials.password,
-                                                strlen((char *)wifi_conn_param.ap_credentials.password));
-
-                wifi_details.ssid_len = strlen((char *)wifi_conn_param.ap_credentials.SSID);
-                wifi_details.password_len = strlen((char *)wifi_conn_param.ap_credentials.password);
-
-                /* Write data to EEPROM. */
-                eepromReturnValue = Cy_Em_EEPROM_Write(LOGICAL_EEPROM_START,
-                                            (void *)&wifi_details.wifi_ssid[0],
-                                            sizeof(wifi_details),
-                                            &Em_EEPROM_context);
-
-                if(CY_EM_EEPROM_SUCCESS != eepromReturnValue)
-                {
-                    printf("Failed to write to EMEEPROM: %d\n", eepromReturnValue);
-                }
-            }
-
             memset(&scan_filter, 0, sizeof(cy_wcm_scan_filter_t));
 
-           /* Configure the scan filter for SSID */
-            scan_filter.mode = CY_WCM_SCAN_FILTER_TYPE_SSID;
-            memcpy(scan_filter.param.SSID, wifi_conn_param.ap_credentials.SSID,
-            strlen((char *)wifi_conn_param.ap_credentials.SSID));
+            /* If the Connect bit is set then we need to only scan for networks
+             * with the given SSID. Set the correct filter values and start scan
+             */
+            if(NOTIF_CONNECT & ulNotifiedValue)
+            {
+                /* Configure the scan filter for SSID */
+                scan_filter.mode = CY_WCM_SCAN_FILTER_TYPE_SSID;
+                memcpy(scan_filter.param.SSID, wifi_conn_param.ap_credentials.SSID,
+                strlen((char *)wifi_conn_param.ap_credentials.SSID));
+                printf("Starting scan with SSID: %s\n", scan_filter.param.SSID);
 
-            printf("Starting scan with SSID: %s\n", scan_filter.param.SSID);
-            result = cy_wcm_start_scan(scan_callback, NULL, &scan_filter);
+                result = cy_wcm_start_scan(scan_callback, &ulNotifiedValue,
+                                           &scan_filter);
+            }
+            /* Else start scan without any filter */
+            else
+            {
+                result = cy_wcm_start_scan(scan_callback, &ulNotifiedValue, NULL);
+            }
 
             if(result)
             {
                 printf("Start scan failed\n");
             }
         }
-        /* If the scan is complete then proceed for connection */
-        else if(NOTIF_SCAN_COMPLETE == ulNotifiedValue)
+
+        /* Check for connection notification */
+        else if(NOTIF_CONNECT == ulNotifiedValue)
         {
-            /* Variable to track the number of connection retries to the Wi-Fi AP */
+            /* Variable to track the number of connection retries to the Wi-Fi
+             * AP
+             */
             uint8_t conn_retries = 0;
 
             /* Join the Wi-Fi AP */
             result = CY_RSLT_TYPE_ERROR;
 
-            while((result != CY_RSLT_SUCCESS) && (conn_retries < MAX_CONNECTION_RETRIES))
+            while((result != CY_RSLT_SUCCESS) && (conn_retries <
+                                                        MAX_CONNECTION_RETRIES))
             {
                 /* If button ISR is received then skip connecting to WiFi */
                 if(button_pressed)
@@ -241,19 +217,21 @@ void wifi_task(void * arg)
             {
                 printf("Successfully joined the Wi-Fi network\n");
 
-                /* Update GATT DB about disconnection */
-                app_custom_service_wifi_connection[0] = true;
+                /* Update GATT DB about connection */
+                app_custom_service_wifi_control[0] = WIFI_CONTROL_CONNECT;
 
-                /* Check if the connection is active, notifications are enabled the connection request had
-                 * come from BLE client and then send the notification
+                /* Check if the connection is active and  notifications are
+                 * enabled and then send the notification
                  */
                 if ((conn_id != 0) &&
-                    ((app_custom_service_wifi_connection_client_char_config[0] & GATT_CLIENT_CONFIG_NOTIFICATION)))
+                   ((app_custom_service_wifi_control_client_char_config[0] &
+                     GATT_CLIENT_CONFIG_NOTIFICATION)))
                 {
-                    uint8_t *p_attr = (uint8_t*)app_custom_service_wifi_connection;
-                    wiced_bt_gatt_server_send_notification(conn_id, HDLC_CUSTOM_SERVICE_WIFI_CONNECTION_VALUE,
-                                                    sizeof(app_custom_service_wifi_connection[0]),
-                                                    p_attr, NULL);
+                    uint8_t *p_attr = (uint8_t*)app_custom_service_wifi_control;
+                    wiced_bt_gatt_server_send_notification(conn_id,
+                                    HDLC_CUSTOM_SERVICE_WIFI_CONTROL_VALUE,
+                                    sizeof(app_custom_service_wifi_control[0]),
+                                    p_attr, NULL);
                 }
                 else /* Notification not sent */
                 {
@@ -263,19 +241,21 @@ void wifi_task(void * arg)
             else /* WiFi connection failed */
             {
                 /* Update GATT DB about unsuccessful connection */
-                app_custom_service_wifi_connection[0] = false;
+                app_custom_service_wifi_control[0] = WIFI_CONTROL_DISCONNECT;
 
                 /* Send notification for unsuccessful connection */
-                /* Check if the connection is active, notifications are enabled the connection request had
-                 * come from BLE client
+                /* Check if the connection is active and notifications are
+                 * enabled and then send the notification
                  */
                 if ((conn_id != 0) &&
-                    ((app_custom_service_wifi_connection_client_char_config[0] & GATT_CLIENT_CONFIG_NOTIFICATION)))
+                    ((app_custom_service_wifi_control_client_char_config[0] &
+                      GATT_CLIENT_CONFIG_NOTIFICATION)))
                 {
-                    uint8_t *p_attr = (uint8_t*)app_custom_service_wifi_connection;
-                    wiced_bt_gatt_server_send_notification(conn_id, HDLC_CUSTOM_SERVICE_WIFI_CONNECTION_VALUE,
-                                                    sizeof(app_custom_service_wifi_connection[0]),
-                                                    p_attr, NULL);
+                    uint8_t *p_attr = (uint8_t*)app_custom_service_wifi_control;
+                    wiced_bt_gatt_server_send_notification(conn_id,
+                                     HDLC_CUSTOM_SERVICE_WIFI_CONTROL_VALUE,
+                                     sizeof(app_custom_service_wifi_control[0]),
+                                     p_attr, NULL);
                 }
                 else /* Notification not sent */
                 {
@@ -284,30 +264,40 @@ void wifi_task(void * arg)
 
                 printf("Failed to join Wi-Fi network\n");
 
-                if((0 == conn_id) && (BTM_BLE_ADVERT_OFF == wiced_bt_ble_get_current_advert_mode()))
+                if((0 == conn_id) && (BTM_BLE_ADVERT_OFF ==
+                                      wiced_bt_ble_get_current_advert_mode()))
                 {
                     printf("Starting BLE ADV. Connect to BLE and provide"
                             "proper credentials\n");
-                    /* Set the advertising params and make the device discoverable */
-                    result = wiced_bt_ble_set_raw_advertisement_data(CY_BT_ADV_PACKET_DATA_SIZE,
-                            cy_bt_adv_packet_data);
+                    /* Set the advertising params and make the device
+                     * discoverable
+                     */
+                    result = wiced_bt_ble_set_raw_advertisement_data(
+                                                     CY_BT_ADV_PACKET_DATA_SIZE,
+                                                     cy_bt_adv_packet_data);
                     if(WICED_SUCCESS != result)
                     {
                         printf("Set ADV data failed\n");
                     }
 
-                    wiced_bt_start_advertisements(BTM_BLE_ADVERT_UNDIRECTED_LOW, 0, NULL);
+                    wiced_bt_start_advertisements(BTM_BLE_ADVERT_UNDIRECTED_LOW,
+                                                  0, NULL);
                 }
             }
         }
         /* Task notification for disconnection */
-        else if((NOTIF_DISCONNECT_GATT_DB == ulNotifiedValue) || (NOTIF_DISCONNECT_BTN == ulNotifiedValue))
+        else if(NOTIF_DISCONNECT & ulNotifiedValue)
         {
-            if(NOTIF_DISCONNECT_BTN == ulNotifiedValue)
+            /* Check if the erase bit is also set in the notification. If yes
+             * then erase the data from EMEEPROM
+             */
+            if(NOTIF_ERASE_DATA & ulNotifiedValue)
             {
                 printf("Deleting Wi-Fi data from EMEEPROM\n");
+
                 /* Set the data to 0*/
                 memset(&wifi_details, 0, sizeof(wifi_details));
+
                 /* Write data to EEPROM. */
                 eepromReturnValue = Cy_Em_EEPROM_Write(LOGICAL_EEPROM_START,
                                         (void *)&wifi_details.wifi_ssid[0],
@@ -325,16 +315,22 @@ void wifi_task(void * arg)
             if(result == CY_RSLT_SUCCESS)
             {
                 /* Update GATT DB about disconnection */
-                app_custom_service_wifi_connection[0] = false;
+                app_custom_service_wifi_control[0] = WIFI_CONTROL_DISCONNECT;
 
                 printf("Successfully disconnected from AP\n");
-             /* Start ADV if the device is not already connected or advertising */
-                if((0 == conn_id) && (BTM_BLE_ADVERT_OFF == wiced_bt_ble_get_current_advert_mode()))
+
+                /* Start ADV if the device is not already connected or
+                 * advertising
+                */
+                if((0 == conn_id) && (BTM_BLE_ADVERT_OFF ==
+                                      wiced_bt_ble_get_current_advert_mode()))
                 {
                     printf("Starting BLE ADV. Connect to BLE and provide "
                             "proper credentials\n");
 
-                    result = wiced_bt_start_advertisements(BTM_BLE_ADVERT_UNDIRECTED_LOW, 0, NULL);
+                    result = wiced_bt_start_advertisements(
+                                                  BTM_BLE_ADVERT_UNDIRECTED_LOW,
+                                                  0, NULL);
 
                     if(WICED_SUCCESS != result)
                     {
@@ -344,17 +340,18 @@ void wifi_task(void * arg)
                 else /* Connection is active */
                 {
                     /* Send notification for successful disconnection */
-                    /* Check if the connection is active, notifications are enabled the disconnection request had
-                     * come from BLE client
+                    /* Check if the connection is active and notifications are
+                     * enabled
                      */
                     if ((conn_id != 0) &&
-                        ((app_custom_service_wifi_connection_client_char_config[0] & GATT_CLIENT_CONFIG_NOTIFICATION) &&
-                        NOTIF_DISCONNECT_GATT_DB == ulNotifiedValue))
+                        (app_custom_service_wifi_control_client_char_config[0] &
+                         GATT_CLIENT_CONFIG_NOTIFICATION))
                     {
-                        uint8_t *p_attr = (uint8_t*)app_custom_service_wifi_connection;
-                        wiced_bt_gatt_server_send_notification(conn_id, HDLC_CUSTOM_SERVICE_WIFI_CONNECTION_VALUE,
-                                                    sizeof(app_custom_service_wifi_connection[0]),
-                                                    p_attr, NULL);
+                        uint8_t *p_attr = (uint8_t*)app_custom_service_wifi_control;
+                        wiced_bt_gatt_server_send_notification(conn_id,
+                                     HDLC_CUSTOM_SERVICE_WIFI_CONTROL_VALUE,
+                                     sizeof(app_custom_service_wifi_control[0]),
+                                     p_attr, NULL);
                     }
                     else /* Notification not sent */
                     {
@@ -377,7 +374,9 @@ void wifi_task(void * arg)
  * Function Name: scan_callback
  *******************************************************************************
  * Summary: The callback function which accumulates the scan results.
- * After completing the scan, it sends a task notification to wifi_task.
+ * If the CONNECT bit is set in the user_data then send back task notification
+ * to the WiFi task to connect to the AP. If not then send the results back to
+ * the BLE Client
  *
  * Parameters:
  *  cy_wcm_scan_result_t *result_ptr: Pointer to the scan result
@@ -388,19 +387,68 @@ void wifi_task(void * arg)
  *  void
  *
  ******************************************************************************/
-void scan_callback(cy_wcm_scan_result_t *result_ptr, void *user_data, cy_wcm_scan_status_t status)
+void scan_callback(cy_wcm_scan_result_t *result_ptr, void *user_data,
+                   cy_wcm_scan_status_t status)
 {
-    if ((strlen((const char *)result_ptr->SSID) != 0) && (status == CY_WCM_SCAN_INCOMPLETE))
+    uint8_t *scan_data;
+    uint8_t byte_no = 0;
+    uint8_t ssid_len = 0;
+
+    ssid_len = strlen((const char *)result_ptr->SSID);
+
+    if ((ssid_len != 0) && (status == CY_WCM_SCAN_INCOMPLETE))
+//    if ((strlen((const char *)result_ptr->SSID)) && (status == CY_WCM_SCAN_INCOMPLETE))
     {
         wifi_conn_param.ap_credentials.security = result_ptr->security;
             printf("%-32s\t", result_ptr->SSID);
-        printf(get_wifi_security_name(result_ptr->security));
-        printf("\n");
+        printf("%s\n", get_wifi_security_name(result_ptr->security));
+
+        /* If scan bit is set then send the scan result to the BLE Client */
+        if(NOTIF_SCAN == *(uint32_t *) user_data)
+        {
+            /* Get memory for the buffer to send the scan data */
+            scan_data = (uint8_t *)wiced_bt_get_buffer(ssid_len + sizeof(uint32_t));
+            if(NULL == scan_data)
+            {
+                printf("Buffer for notification not allocated\n");
+                return;
+            }
+            /* Fill in the SSID first */
+            scan_data[byte_no++] = SCAN_PACKET_TYPE_SSID;
+            scan_data[byte_no++] = ssid_len;
+            memcpy(&scan_data[byte_no], (const char *)result_ptr->SSID, ssid_len);
+            byte_no = byte_no + ssid_len;
+
+            /* Fill in the 4 bytes of security value */
+            scan_data[byte_no++] = SCAN_PACKET_TYPE_SECURITY;
+            scan_data[byte_no++] = sizeof(uint32_t);
+            scan_data[byte_no++] = (uint8_t)(result_ptr->security & 0x000000ff);
+            scan_data[byte_no++] = (uint8_t)((result_ptr->security &
+                                              0x0000ff00) >> 8);
+            scan_data[byte_no++] = (uint8_t)((result_ptr->security &
+                                              0x00ff0000) >> 16);
+            scan_data[byte_no++] = (uint8_t)((result_ptr->security &
+                                              0xff000000) >> 24);
+
+            if ((conn_id != 0) &&
+                (app_custom_service_wifi_networks_client_char_config[0] &
+                GATT_CLIENT_CONFIG_NOTIFICATION))
+            {
+                wiced_bt_gatt_server_send_notification(conn_id,
+                    HDLC_CUSTOM_SERVICE_WIFI_NETWORKS_VALUE, byte_no, scan_data,
+                    (wiced_bt_gatt_app_context_t)wiced_bt_free_buffer);
+            }
+        }
     }
 
-    if ((CY_WCM_SCAN_COMPLETE == status))
+    /* If the connect bit is set in the user data then connect notification to
+     * the WiFi task
+     */
+    if ((CY_WCM_SCAN_COMPLETE == status) && ((NOTIF_SCAN | NOTIF_CONNECT) ==
+                                              *(uint32_t *) user_data))
     {
-        xTaskNotifyFromISR(wifi_task_handle, NOTIF_SCAN_COMPLETE, eSetValueWithOverwrite, pdFALSE);
+        xTaskNotifyFromISR(wifi_task_handle, NOTIF_CONNECT,
+                           eSetValueWithOverwrite, NULL);
     }
 }
 

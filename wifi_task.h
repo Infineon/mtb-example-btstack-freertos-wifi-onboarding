@@ -1,7 +1,7 @@
 /******************************************************************************
 * File Name: wifi_task.h
 *
-* Description: This is the header file for wifi_task.h. It contains macros,
+* Description: This is the header file for wifi_task.c. It contains macros,
 * enums and structures used by the functions in wifi_task.c. It also contains
 * function prototypes and externs of global variables that can be used by
 * other files
@@ -75,16 +75,30 @@
 #define WIFI_TASK_STACK_SIZE                    (4096u)
 #define WIFI_TASK_PRIORITY                      (5u)
 
+/* Macros defining the packet type */
+#define DATA_PACKET_TYPE_SSID (1u)
+#define DATA_PACKET_TYPE_PASSWORD (2u)
+
+/* Macros defining packet type for scan data */
+#define SCAN_PACKET_TYPE_SSID (1u)
+#define SCAN_PACKET_TYPE_SECURITY (2u)
+#define SCAN_PACKET_TYPE_RSSI (3u)
+
+/* Macros defining the commands for WiFi control point characteristic */
+#define WIFI_CONTROL_DISCONNECT (0u)
+#define WIFI_CONTROL_CONNECT (1u)
+#define WIFI_CONTROL_SCAN (2u)
+
 /* Task notification value to indicate whether to use
  * WiFi credentials from EMEEPROM or from GATT DB
  */
 enum wifi_task_notifications
 {
-    NOTIF_EMEEPROM           = 1,
-    NOTIF_GATT_DB            = 2,
-    NOTIF_SCAN_COMPLETE      = 3,
-    NOTIF_DISCONNECT_GATT_DB = 4,
-    NOTIF_DISCONNECT_BTN     = 5
+    NOTIF_SCAN               = 0x0001,
+    NOTIF_CONNECT            = 0x0002,
+    NOTIF_DISCONNECT         = 0x0004,
+    NOTIF_ERASE_DATA         = 0x0008,
+    NOTIF_GATT_NOTIFICATION  = 0x0010
 };
 
 /******************************************************************************
@@ -105,13 +119,14 @@ typedef __PACKED_STRUCT
 extern cy_stc_eeprom_context_t Em_EEPROM_context;
 extern cy_stc_eeprom_config_t Em_EEPROM_config;
 extern wifi_details_t wifi_details;
+extern cy_wcm_connect_params_t wifi_conn_param;
 
 /******************************************************************************
  *                              Function Prototypes
  ******************************************************************************/
-void                     wifi_task(void * arg);
-void                     scan_callback(cy_wcm_scan_result_t *result_ptr,
-                                      void *user_data, cy_wcm_scan_status_t status);
+void wifi_task(void * arg);
+void scan_callback(cy_wcm_scan_result_t *result_ptr, void *user_data,
+                   cy_wcm_scan_status_t status);
 
 #endif      /* __WIFI_TASK_H__ */
 

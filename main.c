@@ -1,8 +1,8 @@
 /******************************************************************************
 * File Name:   main.c
 *
-* Description: This is the source code for the WiFi Onboarding Using BLE
-*              project for ModusToolbox.
+* Description: This file contains the main function along with all BLE related
+*              functionality.
 *
 * Related Document: See Readme.md
 *
@@ -55,7 +55,7 @@
 #include "cycfg_gatt_db.h"
 #include "wifi_task.h"
 #include "wiced_memory.h"
-
+#include <inttypes.h>
 /******************************************************************************
  *                                Constants
  ******************************************************************************/
@@ -66,6 +66,8 @@
 /* LE Key Size */
 #define MAX_KEY_SIZE (16)
 
+/* WICED Heap size for app */
+#define APP_HEAP_SIZE 0x1000
 /******************************************************************************
  *                                 TYPEDEFS
  ******************************************************************************/
@@ -74,7 +76,7 @@ typedef void (*pfn_free_buffer_t)(uint8_t *);
 /******************************************************************************
  *                             Global Variables
  ******************************************************************************/
-/* Task Handles for WiFi Task */
+/* Task Handle for WiFi Task */
 TaskHandle_t wifi_task_handle;
 
 /* Maintains the connection id of the current connection */
@@ -90,18 +92,23 @@ volatile bool button_pressed = false;
 /* This enables RTOS aware debugging. */
 volatile int uxTopUsedPriority;
 
+/* Pointer to the heap created */
+wiced_bt_heap_t * app_heap_pointer;
 /******************************************************************************
  *                              Function Prototypes
  ******************************************************************************/
 static wiced_result_t app_management_callback(wiced_bt_management_evt_t event,
-                      wiced_bt_management_evt_data_t *p_event_data);
+                                              wiced_bt_management_evt_data_t *p_event_data);
 static wiced_bt_gatt_status_t app_gatts_callback(wiced_bt_gatt_evt_t event,
-                              wiced_bt_gatt_event_data_t *p_data);
+                                                 wiced_bt_gatt_event_data_t *p_data);
 static void application_init(void);
-static void gpio_interrupt_handler(void *handler_arg,
-            cyhal_gpio_event_t event);
-uint8_t *app_alloc_buffer(uint16_t len);
-void app_free_buffer(uint8_t *p_data);
+static void gpio_interrupt_handler(void *handler_arg, cyhal_gpio_event_t event);
+
+cyhal_gpio_callback_data_t cb_data =
+{
+.callback = gpio_interrupt_handler,
+.callback_arg = NULL
+};
 
 /*******************************************************************************
 * Function Name: main
@@ -113,7 +120,7 @@ void app_free_buffer(uint8_t *p_data);
 *    3. Initializes retarget IO for UART debug printing
 *    4. Initializes platform configuration
 *    5. Initializes BT stack and heap
-*    6. Creates WiFi connect and disconnect tasks
+*    6. Creates WiFi task
 *    7. Starts the RTOS scheduler
 *
 * Return:
@@ -122,9 +129,6 @@ void app_free_buffer(uint8_t *p_data);
 *******************************************************************************/
 int main()
 {
-    /* Return status for EEPROM. */
-    cy_en_em_eeprom_status_t eepromReturnValue;
-
     /* This enables RTOS aware debugging in OpenOCD. */
     uxTopUsedPriority = configMAX_PRIORITIES - 1;
 
@@ -133,14 +137,6 @@ int main()
     {
         CY_ASSERT(0);
     }
-
-    /* Initialize the user button.*/
-    cyhal_gpio_init(CYBSP_USER_BTN, CYHAL_GPIO_DIR_INPUT,
-                    CYHAL_GPIO_DRIVE_NONE, CYBSP_BTN_OFF);
-
-    /* Configure GPIO interrupt */
-    cyhal_gpio_register_callback(CYBSP_USER_BTN,
-                                 gpio_interrupt_handler, NULL);
 
     /* Enable global interrupts */
     __enable_irq();
@@ -153,15 +149,6 @@ int main()
            "Wi-Fi Onboarding Using BLE\n"
            "***************************\n\n");
 
-    /* Initialize the EMEEPROM. */
-    eepromReturnValue = Cy_Em_EEPROM_Init(&Em_EEPROM_config, &Em_EEPROM_context);
-
-    if (CY_EM_EEPROM_SUCCESS != eepromReturnValue)
-    {
-        printf("Error initializing EMEEPROM\n");
-        CY_ASSERT(0);
-    }
-
     /* Configure platform specific settings for Bluetooth */
     cybt_platform_config_init(&cybsp_bt_platform_cfg);
 
@@ -170,7 +157,7 @@ int main()
     if (WICED_SUCCESS != wiced_bt_stack_init(app_management_callback,
                                              &wiced_bt_cfg_settings))
     {
-        printf("Error initializing BT stack\n");
+        printf("Error in initializing the BT stack\n");
         CY_ASSERT(0);
     }
 
@@ -199,9 +186,31 @@ void application_init(void)
 {
     wiced_result_t result = WICED_ERROR;
     wiced_bt_gatt_status_t gatt_status = WICED_BT_GATT_INVALID_CONNECTION_ID;
+    cy_rslt_t cy_result = 0;
 
-    /* Return status for EEPROM. */
+    /* Return status for EEPROM */
     cy_en_em_eeprom_status_t eepromReturnValue;
+
+    /* Create a buffer heap, make it the default heap */
+    app_heap_pointer = wiced_bt_create_heap("app", NULL, APP_HEAP_SIZE, NULL,
+                                            WICED_TRUE);
+
+    if(NULL == app_heap_pointer)
+    {
+        printf("failed to create heap\n");
+        CY_ASSERT(0);
+    }
+
+    /* Initialize the user button.*/
+    cy_result = cyhal_gpio_init(CYBSP_USER_BTN, CYHAL_GPIO_DIR_INPUT,
+                    CYHAL_GPIO_DRIVE_NONE, CYBSP_BTN_OFF);
+    if(cy_result)
+    {
+        printf("GPIO Init failed\n");
+    }
+
+    /* Configure GPIO interrupt */
+    cyhal_gpio_register_callback(CYBSP_USER_BTN,&cb_data);
 
     /* Enabling button interrupt */
     cyhal_gpio_enable_event(CYBSP_USER_BTN, CYHAL_GPIO_IRQ_FALL,
@@ -209,21 +218,40 @@ void application_init(void)
 
     /* Register with stack to receive GATT callback */
     gatt_status = wiced_bt_gatt_register(app_gatts_callback);
-    printf("\nGATT status:\t");
-    printf(get_bt_gatt_status_name(gatt_status));
-    printf("\n");
+
+    if(WICED_BT_GATT_SUCCESS !=gatt_status)
+    {
+        printf("\nGATT register failed. Status: %s\n", get_bt_gatt_status_name(
+                                                       gatt_status));
+    }
 
     /*  Inform the stack to use our GATT database */
     gatt_status = wiced_bt_gatt_db_init(gatt_database, gatt_database_len, NULL);
 
+    if(WICED_BT_GATT_SUCCESS !=gatt_status)
+    {
+        printf("\nGATT db init failed. Status :%s\n",get_bt_gatt_status_name(
+                                                     gatt_status));
+    }
+
     /* Allow peer to pair */
     wiced_bt_set_pairable_mode(WICED_TRUE, false);
 
+    /* Set BLE advertisement data */
     result = wiced_bt_ble_set_raw_advertisement_data(CY_BT_ADV_PACKET_DATA_SIZE,
                                                      cy_bt_adv_packet_data);
     if (WICED_SUCCESS != result)
     {
         printf("Set ADV data failed\n");
+    }
+
+    /* Initialize the EMEEPROM. */
+    eepromReturnValue = Cy_Em_EEPROM_Init(&Em_EEPROM_config, &Em_EEPROM_context);
+
+    if (CY_EM_EEPROM_SUCCESS != eepromReturnValue)
+    {
+        printf("Error initializing EMEEPROM\n");
+        CY_ASSERT(0);
     }
 
     /* Determine if the EEPROM has a previously stored WiFi SSID value.
@@ -238,10 +266,21 @@ void application_init(void)
         (0 != wifi_details.ssid_len))
     {
         printf("Data present in EMEEPROM\n");
-        /* Unblock WiFi task with notification value indicating the WiFi
-         * credentials should be taken from EMEEPROM
-         */
-        xTaskNotify(wifi_task_handle, NOTIF_EMEEPROM, eSetValueWithOverwrite);
+
+        /* Set the WiFi Connection parameters structure to 0 before copying
+         * data */
+        memset(&wifi_conn_param, 0, sizeof(cy_wcm_connect_params_t));
+
+        /* Copy the WiFi credentials to the global variable */
+        memcpy(wifi_conn_param.ap_credentials.SSID, &wifi_details.wifi_ssid[0],
+               wifi_details.ssid_len);
+
+        memcpy(wifi_conn_param.ap_credentials.password,
+               &wifi_details.wifi_password[0], wifi_details.password_len);
+
+        /* Unblock WiFi task with notification */
+        xTaskNotify(wifi_task_handle, (NOTIF_SCAN | NOTIF_CONNECT),
+                    eSetValueWithOverwrite);
     }
     else /* WiFi credentials not found in EMEEPROM */
     {
@@ -270,35 +309,45 @@ void application_init(void)
 *
 *******************************************************************************/
 wiced_result_t app_management_callback(wiced_bt_management_evt_t event,
-               wiced_bt_management_evt_data_t *p_event_data)
+                                       wiced_bt_management_evt_data_t *p_event_data)
 {
     wiced_result_t result = WICED_BT_SUCCESS;
     wiced_bt_device_address_t bda = {0};
     wiced_bt_dev_ble_io_caps_req_t *pairing_io_caps = &(p_event_data->
                                            pairing_io_capabilities_ble_request);
 
-    printf("Bluetooth Management Event: \t");
-    printf(get_bt_event_name(event));
-    printf("\n");
+    printf("Bluetooth Management Event: %s\n", get_bt_event_name(event));
 
     switch (event)
     {
     case BTM_ENABLED_EVT:
-        /* Initialize the application */
-        wiced_bt_set_local_bdaddr((uint8_t *)cy_bt_device_address, BLE_ADDR_PUBLIC);
+
         /* Bluetooth is enabled */
+        wiced_bt_set_local_bdaddr((uint8_t *)cy_bt_device_address,
+                                   BLE_ADDR_PUBLIC);
+
+        /* Read and print the BD address */
         wiced_bt_dev_read_local_addr(bda);
         printf("Local Bluetooth Address: ");
         print_bd_address(bda);
+        printf("\n");
 
         application_init();
         break;
 
     case BTM_DISABLED_EVT:
         break;
+        /* Print passkey to the screen so that the user can enter it. */
+    case BTM_PASSKEY_NOTIFICATION_EVT:
+        printf( "********************************************************\r\n");
+        printf( "Passkey Notification\r\n");
+        printf("PassKey: %" PRIu32 "\r\n",
+        p_event_data->user_passkey_notification.passkey );
+        printf( "***********************************************************\r\n");
+        break;
 
     case BTM_PAIRING_IO_CAPABILITIES_BLE_REQUEST_EVT:
-        pairing_io_caps->local_io_cap = BTM_IO_CAPABILITIES_NONE;
+        pairing_io_caps->local_io_cap = BTM_IO_CAPABILITIES_DISPLAY_ONLY;
 
         pairing_io_caps->oob_data = BTM_OOB_NONE;
 
@@ -363,9 +412,8 @@ wiced_result_t app_management_callback(wiced_bt_management_evt_t event,
 
     case BTM_BLE_ADVERT_STATE_CHANGED_EVT:
         printf("\n");
-        printf("Advertisement state changed to ");
-        printf(get_bt_advert_mode_name(p_event_data->ble_advert_state_changed));
-        printf("\n");
+        printf("Advertisement state changed to %s\n", get_bt_advert_mode_name(
+                                       p_event_data->ble_advert_state_changed));
         break;
 
     default:
@@ -414,14 +462,16 @@ gatt_db_lookup_table_t *app_get_attribute(uint16_t handle)
 * Parameters:
 *  uint16_t conn_id: Connection ID
 *  wiced_bt_gatt_read_t * p_read_data: Read data structure
-*
+*  wiced_bt_gatt_opcode_t opcode: GATT opcode
+*  uint16_t len_requested: Length requested
 * Return:
 *  wiced_bt_gatt_status_t: GATT result
 *
 *******************************************************************************/
 wiced_bt_gatt_status_t app_gatts_req_read_handler(uint16_t conn_id,
-                       wiced_bt_gatt_opcode_t opcode,
-                       wiced_bt_gatt_read_t *p_read_data, uint16_t len_requested)
+                                                  wiced_bt_gatt_opcode_t opcode,
+                                                  wiced_bt_gatt_read_t *p_read_data,
+                                                  uint16_t len_requested)
 {
 
     gatt_db_lookup_table_t *puAttribute;
@@ -469,7 +519,7 @@ wiced_bt_gatt_status_t app_gatts_req_read_handler(uint16_t conn_id,
 * Parameters:
 *  uint16_t conn_id: Connection ID
 *  wiced_bt_gatt_opcode_t opcode: GATT opcode
-*  wiced_bt_gatt_read_t * p_read_data: Read data structure
+*  wiced_bt_gatt_read_by_type_t * p_read_data: Read data structure
 *  uint16_t len_requested: Length requested
 *
 * Return:
@@ -477,14 +527,14 @@ wiced_bt_gatt_status_t app_gatts_req_read_handler(uint16_t conn_id,
 *
 *******************************************************************************/
 wiced_bt_gatt_status_t app_gatt_read_by_type_handler(uint16_t conn_id,
-                        wiced_bt_gatt_opcode_t opcode,
-                        wiced_bt_gatt_read_by_type_t *p_read_data,
-                        uint16_t len_requested)
+                                         wiced_bt_gatt_opcode_t opcode,
+                                         wiced_bt_gatt_read_by_type_t *p_read_data,
+                                         uint16_t len_requested)
 {
     gatt_db_lookup_table_t *puAttribute;
     uint16_t    attr_handle = p_read_data->s_handle;
     uint8_t     *p_rsp = wiced_bt_get_buffer(len_requested);
-    uint8_t    pair_len = 0;
+    uint8_t     pair_len = 0;
     int used = 0;
 
     if (p_rsp == NULL)
@@ -512,16 +562,14 @@ wiced_bt_gatt_status_t app_gatt_read_by_type_handler(uint16_t conn_id,
             return WICED_BT_GATT_ERR_UNLIKELY;
         }
 
+        int filled = wiced_bt_gatt_put_read_by_type_rsp_in_stream(
+                p_rsp + used, len_requested - used, &pair_len, attr_handle,
+                 puAttribute->cur_len, puAttribute->p_data);
+        if (filled == 0)
         {
-            int filled = wiced_bt_gatt_put_read_by_type_rsp_in_stream(
-                    p_rsp + used, len_requested - used, &pair_len, attr_handle,
-                     puAttribute->cur_len, puAttribute->p_data);
-            if (filled == 0)
-            {
-                break;
-            }
-            used += filled;
+            break;
         }
+        used += filled;
 
         /* Increment starting handle for next search to one past current */
         attr_handle++;
@@ -550,6 +598,7 @@ wiced_bt_gatt_status_t app_gatt_read_by_type_handler(uint16_t conn_id,
 *
 * Parameters:
 *  uint16_t conn_id: Connection ID
+*  wiced_bt_gatt_opcode_t opcode: GATT opcode
 *  wiced_bt_gatt_write_t * p_data: Write data structure
 *
 * Return:
@@ -557,12 +606,19 @@ wiced_bt_gatt_status_t app_gatt_read_by_type_handler(uint16_t conn_id,
 *
 *******************************************************************************/
 wiced_bt_gatt_status_t app_gatts_req_write_handler(uint16_t conn_id,
-                       wiced_bt_gatt_opcode_t opcode,
-                       wiced_bt_gatt_write_req_t *p_data)
+                                                   wiced_bt_gatt_opcode_t opcode,
+                                                   wiced_bt_gatt_write_req_t *p_data)
 {
     wiced_bt_gatt_status_t result = WICED_BT_GATT_SUCCESS;
     uint8_t *p_attr = p_data->p_val;
     gatt_db_lookup_table_t *puAttribute;
+
+    /* Return status for EEPROM. */
+    cy_en_em_eeprom_status_t eepromReturnValue;
+
+    /* Variables for TLV data extraction */
+    uint8_t byte_no = 0;
+    uint8_t data_length = 0;
 
     printf("GATT write handler: handle:0x%X len:%d, opcode:0x%X\n",
            p_data->handle, p_data->val_len, opcode);
@@ -579,51 +635,173 @@ wiced_bt_gatt_status_t app_gatts_req_write_handler(uint16_t conn_id,
     /* Write request for the WiFi SSID characteristic. Copy the incoming data
     to the WIFI SSID variable */
     case HDLC_CUSTOM_SERVICE_WIFI_SSID_VALUE:
+
+        /* First copy the value to the GATT DB variable and then to the global
+         * variable to be stored in NV memory
+         */
         memset(app_custom_service_wifi_ssid, 0,
                strlen((char *)app_custom_service_wifi_ssid));
         memcpy(app_custom_service_wifi_ssid, p_attr, p_data->val_len);
         puAttribute->cur_len = p_data->val_len;
+
+        memcpy(&wifi_details.wifi_ssid[0], p_attr, p_data->val_len);
+        wifi_details.ssid_len = p_data->val_len;
+
         printf("Wi-Fi SSID: %s\n", app_custom_service_wifi_ssid);
         break;
 
     /* Write request for the WiFi password characteristic. Accept the password.
     Copy the incoming data to the WIFI Password variable */
     case HDLC_CUSTOM_SERVICE_WIFI_PASSWORD_VALUE:
+
+        /* First copy the value to the GATT DB variable and then to the global
+         * variable to be stored in NV memory
+         */
         memset(app_custom_service_wifi_password, 0,
                 strlen((char *)app_custom_service_wifi_password));
         memcpy(app_custom_service_wifi_password, p_attr, p_data->val_len);
         puAttribute->cur_len = p_data->val_len;
+
+        memcpy(&wifi_details.wifi_password[0], p_attr, p_data->val_len);
+        wifi_details.password_len = p_data->val_len;
+
         printf("Wi-Fi Password: %s\n", app_custom_service_wifi_password);
         break;
 
-    /* Write request for the connection characteristic. Copy the incoming data
-    to the WIFI connection variable. Based on the value either start connect
-    or disconnect procedure */
-    case HDLC_CUSTOM_SERVICE_WIFI_CONNECTION_VALUE:
-        app_custom_service_wifi_connection[0] = p_attr[0];
+    /* Write request for the WiFi SSID and password characteristic. Accept the
+    values and Copy the incoming data to the WIFI SSID Password variable */
+    case HDLC_CUSTOM_SERVICE_WIFI_SSID_PASSWORD_VALUE:
+
+        /* Extract the value from the received data */
+        for(byte_no = 0; byte_no < p_data->val_len;)
+        {
+            /* Check if the Type is SSID packet type */
+            if(DATA_PACKET_TYPE_SSID == p_attr[byte_no])
+            {
+                /* Extract the length of the data */
+                data_length =  p_attr[++byte_no];
+
+                /* Copy the SSID value based on the length */
+                memcpy(&wifi_details.wifi_ssid[0], &p_attr[++byte_no],
+                        data_length);
+
+                wifi_details.ssid_len = data_length;
+
+                /* Move the pointer to the address after the SSID value */
+                byte_no = byte_no + data_length;
+
+            }
+            /* Check if the Type is password packet type */
+            else if(DATA_PACKET_TYPE_PASSWORD == p_attr[byte_no])
+            {
+                /* Extract the length of the data */
+                data_length = p_attr[++byte_no];
+
+                /* Copy the password value based on the length */
+                memcpy(&wifi_details.wifi_password[0], &p_attr[++byte_no],
+                        data_length);
+
+                wifi_details.password_len = data_length;
+
+                /* Move the pointer to the end of the packet. No more data
+                 * expected
+                 */
+                byte_no = byte_no + data_length;
+            }
+        }
+
+        printf("Wi-Fi SSID: %s\n", wifi_details.wifi_ssid);
+        printf("Wi-Fi Password: %s\n", wifi_details.wifi_password);
+        break;
+
+
+    /* Handle the CCCD values for WIFI NETWORKS characteristic */
+    case HDLD_CUSTOM_SERVICE_WIFI_NETWORKS_CLIENT_CHAR_CONFIG:
+        app_custom_service_wifi_networks_client_char_config[0] = p_attr[0];
+        app_custom_service_wifi_networks_client_char_config[1] = p_attr[1];
+        break;
+
+    /* Write request for the control characteristic. Copy the incoming data
+    to the WIFI control variable. Based on the value, start connect, disconnect
+     or scan procedure */
+    case HDLC_CUSTOM_SERVICE_WIFI_CONTROL_VALUE:
+        app_custom_service_wifi_control[0] = p_attr[0];
         puAttribute->cur_len = p_data->val_len;
 
-        /* Connection message */
-        if (app_custom_service_wifi_connection[0])
+        /* Connect command */
+        if (WIFI_CONTROL_CONNECT == app_custom_service_wifi_control[0])
         {
-            /* Unblock WiFiConnect task with notification value indicating the
-             * WiFi credentials should be taken from GATT DB
-             */
-            xTaskNotify(wifi_task_handle, NOTIF_GATT_DB, eSetValueWithOverwrite);
+            if(0 != wifi_details.ssid_len)
+            {
+                /* Set the WiFi Connection parameters structure to 0 before copying
+                 * data */
+                memset(&wifi_conn_param, 0, sizeof(cy_wcm_connect_params_t));
+
+                /* Copy the WiFi credentials to the global variable */
+                memcpy(wifi_conn_param.ap_credentials.SSID,
+                       &wifi_details.wifi_ssid[0], wifi_details.ssid_len);
+
+                memcpy(wifi_conn_param.ap_credentials.password,
+                       &wifi_details.wifi_password[0], wifi_details.password_len);
+
+                /* Write data to EEPROM. */
+                eepromReturnValue = Cy_Em_EEPROM_Write(LOGICAL_EEPROM_START,
+                                            (void *)&wifi_details.wifi_ssid[0],
+                                            sizeof(wifi_details),
+                                            &Em_EEPROM_context);
+
+                if(CY_EM_EEPROM_SUCCESS != eepromReturnValue)
+                {
+                    printf("Failed to write to EMEEPROM: %d\n", eepromReturnValue);
+                }
+
+                /* Send notification to the WiFi task to scan and connect with
+                 * the given WiFi credentials
+                 */
+                xTaskNotify(wifi_task_handle, (NOTIF_SCAN | NOTIF_CONNECT),
+                            eSetValueWithOverwrite);
+            }
+            else
+            {
+                printf("WiFi Credentials not present\n");
+            }
         }
-        else /* Disconnection message */
+        /* Scan command */
+        else if(WIFI_CONTROL_SCAN == app_custom_service_wifi_control[0])
         {
-            xTaskNotify(wifi_task_handle, NOTIF_DISCONNECT_GATT_DB,
+            /* Check if notifications are enabled or not. If not then there is
+             * no point of starting the scan. If GATT notification is enabled
+             * then ask the WiFi task to start WiFi scan
+             */
+            if ((conn_id != 0) &&
+                (app_custom_service_wifi_networks_client_char_config[0] &
+                GATT_CLIENT_CONFIG_NOTIFICATION))
+            {
+                xTaskNotify(wifi_task_handle, (NOTIF_SCAN), eSetValueWithOverwrite);
+            }
+            else
+            {
+                printf("Notifications for WiFi Networks characteristic are "
+                        "disabled. Cannot scan for networks\n");
+            }
+        }
+        /* Disconnect command */
+        else if(WIFI_CONTROL_DISCONNECT == app_custom_service_wifi_control[0])
+        {
+            xTaskNotify(wifi_task_handle, NOTIF_DISCONNECT,
                         eSetValueWithOverwrite);
+        }
+        else
+        {
+            printf("Invalid command\n");
         }
         break;
 
-    /* Notification for connection characteristic. If enabled, notification can
-     * be sent to the client if the connection was successful or not
+    /* Notification for control characteristic.
      */
-    case HDLD_CUSTOM_SERVICE_WIFI_CONNECTION_CLIENT_CHAR_CONFIG:
-        app_custom_service_wifi_connection_client_char_config[0] = p_attr[0];
-        app_custom_service_wifi_connection_client_char_config[1] = p_attr[1];
+    case HDLD_CUSTOM_SERVICE_WIFI_CONTROL_CLIENT_CHAR_CONFIG:
+        app_custom_service_wifi_control_client_char_config[0] = p_attr[0];
+        app_custom_service_wifi_control_client_char_config[1] = p_attr[1];
         break;
 
     default:
@@ -636,7 +814,7 @@ wiced_bt_gatt_status_t app_gatts_req_write_handler(uint16_t conn_id,
 }
 
 /*******************************************************************************
-* Function Name: app_gatt_connect_callback
+* Function Name: app_gatt_connect_handler
 ********************************************************************************
 * Summary:
 * This function handles the GATT connect request events from the stack
@@ -648,7 +826,7 @@ wiced_bt_gatt_status_t app_gatts_req_write_handler(uint16_t conn_id,
 *  wiced_bt_gatt_status_t: GATT result
 *
 *******************************************************************************/
-wiced_bt_gatt_status_t app_gatt_connect_callback(
+wiced_bt_gatt_status_t app_gatt_connect_handler(
                        wiced_bt_gatt_connection_status_t *p_conn_status)
 {
     wiced_bt_gatt_status_t status = WICED_BT_GATT_ERROR;
@@ -672,9 +850,8 @@ wiced_bt_gatt_status_t app_gatt_connect_callback(
             print_bd_address(p_conn_status->bd_addr);
             printf("\n");
 
-            printf("Reason for disconnection: \t");
-            printf(get_bt_gatt_disconn_reason_name(p_conn_status->reason));
-            printf("\n");
+            printf("Reason for disconnection: %s\n",
+                    get_bt_gatt_disconn_reason_name(p_conn_status->reason));
 
             conn_id = 0;
 
@@ -699,7 +876,7 @@ wiced_bt_gatt_status_t app_gatt_connect_callback(
 }
 
 /*******************************************************************************
-* Function Name: app_gatts_req_cb
+* Function Name: app_gatts_attr_req_handler
 ********************************************************************************
 * Summary:
 * This function redirects the GATT attribute requests to the appropriate
@@ -712,7 +889,7 @@ wiced_bt_gatt_status_t app_gatt_connect_callback(
 *  wiced_bt_gatt_status_t: GATT result
 *
 *******************************************************************************/
-wiced_bt_gatt_status_t app_gatts_req_cb(wiced_bt_gatt_attribute_request_t *p_data)
+wiced_bt_gatt_status_t app_gatts_attr_req_handler(wiced_bt_gatt_attribute_request_t *p_data)
 {
     wiced_bt_gatt_status_t result = WICED_BT_GATT_INVALID_PDU;
     wiced_bt_gatt_write_req_t *p_write_request = &p_data->data.write_req;
@@ -743,7 +920,7 @@ wiced_bt_gatt_status_t app_gatts_req_cb(wiced_bt_gatt_attribute_request_t *p_dat
         else
         {
             wiced_bt_gatt_server_send_error_rsp(p_data->conn_id, p_data->opcode,
-                    p_write_request->handle, result);
+                                                p_write_request->handle, result);
         }
         break;
 
@@ -769,31 +946,43 @@ wiced_bt_gatt_status_t app_gatts_req_cb(wiced_bt_gatt_attribute_request_t *p_dat
 *
 * Parameters:
 *  wiced_bt_gatt_attribute_request_t *p_data: GATT request data structure
-*
+*  wiced_bt_gatt_event_data_t *p_data       : Pointer to BLE GATT event structures
 * Return:
 *  wiced_bt_gatt_status_t: GATT result
 *
 *******************************************************************************/
 wiced_bt_gatt_status_t app_gatts_callback(wiced_bt_gatt_evt_t event,
-                       wiced_bt_gatt_event_data_t *p_data)
+                                          wiced_bt_gatt_event_data_t *p_data)
 {
     wiced_bt_gatt_status_t result = WICED_BT_GATT_INVALID_PDU;
+
+    printf("GATTS event: %s\n", get_bt_gatt_evt_name(event));
 
     switch (event)
     {
     case GATT_CONNECTION_STATUS_EVT:
-        result = app_gatt_connect_callback(&p_data->connection_status);
+        result = app_gatt_connect_handler(&p_data->connection_status);
         break;
 
     case GATT_ATTRIBUTE_REQUEST_EVT:
-        result = app_gatts_req_cb(&p_data->attribute_request);
+        result = app_gatts_attr_req_handler(&p_data->attribute_request);
         break;
 
     case GATT_GET_RESPONSE_BUFFER_EVT:
-        p_data->buffer_request.buffer.p_app_rsp_buffer = app_alloc_buffer(
+        p_data->buffer_request.buffer.p_app_rsp_buffer = wiced_bt_get_buffer(
                                           p_data->buffer_request.len_requested);
-        p_data->buffer_request.buffer.p_app_ctxt = (void *)app_free_buffer;
-        result = WICED_BT_GATT_SUCCESS;
+
+        p_data->buffer_request.buffer.p_app_ctxt = (void *)wiced_bt_free_buffer;
+
+        if(NULL == p_data->buffer_request.buffer.p_app_rsp_buffer)
+        {
+            printf("Insufficient resources\n");
+            result = WICED_BT_GATT_INSUF_RESOURCE;
+        }
+        else
+        {
+            result = WICED_BT_GATT_SUCCESS;
+        }
         break;
 
     case GATT_APP_BUFFER_TRANSMITTED_EVT:
@@ -812,7 +1001,7 @@ wiced_bt_gatt_status_t app_gatts_callback(wiced_bt_gatt_evt_t event,
     break;
 
     default:
-        break;
+        printf("GATT event not handled\n");
     }
     return result;
 }
@@ -827,7 +1016,7 @@ wiced_bt_gatt_status_t app_gatts_callback(wiced_bt_gatt_evt_t event,
  *
  *
  * Parameters:
- *  void *callback_arg : pointer to variable passed to the ISR
+ *  void *callback_arg : pointer to variable passed to the ISR (unused)
  *  cyhal_gpio_event_t event : GPIO event type
  *
  *******************************************************************************/
@@ -835,44 +1024,8 @@ void gpio_interrupt_handler(void *handler_arg, cyhal_gpio_event_t event)
 {
     /* Notify the WiFi task to disconnect */
     button_pressed = true;
-    xTaskNotifyFromISR(wifi_task_handle, NOTIF_DISCONNECT_BTN,
-                        eSetValueWithOverwrite, pdFALSE);
-}
-
-/*******************************************************************************
- * Function Name: app_alloc_buffer
- *******************************************************************************
- * Summary:
- *  This function allocates memory to the buffer.
- *
- *
- * Parameters:
- *  uint16_t len: Length of the memory required
- *
- * Return:
- *  uint8_t *: Pointer to the memory allocated
- *
- *******************************************************************************/
-uint8_t *app_alloc_buffer(uint16_t len)
-{
-    uint8_t *p = (uint8_t *)malloc(len);
-    return p;
-}
-
-/*******************************************************************************
- * Function Name: app_free_buffer
- *******************************************************************************
- * Summary:
- *  This function frees up the buffer memory.
- *
- *
- * Parameters:
- *  uint8_t *p_data: Pointer to the buffer to be free
- *
- *******************************************************************************/
-void app_free_buffer(uint8_t *p_data)
-{
-    free(p_data);
+    xTaskNotifyFromISR(wifi_task_handle, (NOTIF_DISCONNECT | NOTIF_ERASE_DATA),
+                        eSetValueWithOverwrite, NULL);
 }
 
 /* [] END OF FILE */

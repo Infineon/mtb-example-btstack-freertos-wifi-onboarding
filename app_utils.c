@@ -1,10 +1,11 @@
 /******************************************************************************
 * File Name:   app_utils.c
 *
-* Description: This file consists of the utility functions that will help debugging and developing the
-*              applications easier with much more meaningful information.
+* Description: This file consists of the utility functions that will help
+*              debugging and developing the applications easier with much more
+*              meaningful information.
 *
-* Related Document: See Readme.md
+* Related Document: None
 *
 *******************************************************************************
 * Copyright 2021, Cypress Semiconductor Corporation (an Infineon company) or
@@ -39,19 +40,19 @@
 * so agrees to indemnify Cypress against all liability.
 *******************************************************************************/
 
-/******************************************************************************
+/*******************************************************************************
  *                                INCLUDES
  ******************************************************************************/
 #include "stdio.h"
 #include "app_utils.h"
 
-/****************************************************************************
+/*******************************************************************************
  *                              FUNCTION DEFINITIONS
- ***************************************************************************/
+ ******************************************************************************/
 
-/**************************************************************************************************
+/*******************************************************************************
 * Function Name: print_bd_address()
-***************************************************************************************************
+********************************************************************************
 * Summary:
 *   This is the utility function that prints the address of the Bluetooth device
 *
@@ -61,10 +62,11 @@
 * Return:
 *  void
 *
-**************************************************************************************************/
+*******************************************************************************/
 void print_bd_address(wiced_bt_device_address_t bdadr)
 {
-    printf("%02X:%02X:%02X:%02X:%02X:%02X",bdadr[0],bdadr[1],bdadr[2],bdadr[3],bdadr[4],bdadr[5]);
+    printf("%02X:%02X:%02X:%02X:%02X:%02X",bdadr[0],bdadr[1],bdadr[2],bdadr[3],
+            bdadr[4],bdadr[5]);
 }
 
 /*******************************************************************************
@@ -128,9 +130,9 @@ const char *get_bt_event_name(wiced_bt_management_evt_t event)
 * Function Name: get_bt_advert_mode_name
 ********************************************************************************
 * Summary:
-* The function converts the wiced_bt_ble_advert_mode_t enum value to its corresponding
-* string literal. This will help the programmer to debug easily with log traces
-* without navigating through the source code.
+* The function converts the wiced_bt_ble_advert_mode_t enum value to its
+* corresponding string literal. This will help the programmer to debug easily
+* with log traces without navigating through the source code.
 *
 * Parameters:
 *  wiced_bt_ble_advert_mode_t mode: Bluetooth advertisement mode type
@@ -161,9 +163,9 @@ const char *get_bt_advert_mode_name(wiced_bt_ble_advert_mode_t mode)
 * Function Name: get_bt_gatt_disconn_reason_name
 ********************************************************************************
 * Summary:
-* The function converts the wiced_bt_gatt_disconn_reason_t enum value to its corresponding
-* string literal. This will help the programmer to debug easily with log traces
-* without navigating through the source code.
+* The function converts the wiced_bt_gatt_disconn_reason_t enum value to its
+* corresponding string literal. This will help the programmer to debug easily
+* with log traces without navigating through the source code.
 *
 * Parameters:
 *  wiced_bt_gatt_disconn_reason_t reason: GATT Disconnection reason
@@ -172,7 +174,8 @@ const char *get_bt_advert_mode_name(wiced_bt_ble_advert_mode_t mode)
 *  wiced_bt_gatt_disconn_reason_t
 *
 *******************************************************************************/
-const char *get_bt_gatt_disconn_reason_name(wiced_bt_gatt_disconn_reason_t reason)
+const char *get_bt_gatt_disconn_reason_name(wiced_bt_gatt_disconn_reason_t
+                                            reason)
 {
 
     switch ( (int)reason )
@@ -194,9 +197,9 @@ const char *get_bt_gatt_disconn_reason_name(wiced_bt_gatt_disconn_reason_t reaso
 * Function Name: get_bt_gatt_status_name
 ********************************************************************************
 * Summary:
-* The function converts the wiced_bt_gatt_status_t enum value to its corresponding
-* string literal. This will help the programmer to debug easily with log traces
-* without navigating through the source code.
+* The function converts the wiced_bt_gatt_status_t enum value to its
+* corresponding string literal. This will help the programmer to debug easily
+* with log traces without navigating through the source code.
 *
 * Parameters:
 *  wiced_bt_gatt_status_t status: GATT status
@@ -252,6 +255,38 @@ const char *get_bt_gatt_status_name(wiced_bt_gatt_status_t status)
     return "UNKNOWN_STATUS";
 }
 
+/*******************************************************************************
+* Function Name: get_bt_gatt_evt_name
+********************************************************************************
+* Summary:
+* The function converts the wiced_bt_gatt_evt_t enum value to its corresponding
+* string literal. This will help the programmer to debug easily with log traces
+* without navigating through the source code.
+*
+* Parameters:
+*  wiced_bt_gatt_evt_t event: GATT event
+*
+* Return:
+*  wiced_bt_gatt_status_t
+*
+*******************************************************************************/
+const char *get_bt_gatt_evt_name(wiced_bt_gatt_evt_t event)
+{
+
+    switch ( (int)event )
+    {
+    CASE_RETURN_STR(GATT_CONNECTION_STATUS_EVT)
+    CASE_RETURN_STR(GATT_OPERATION_CPLT_EVT)
+    CASE_RETURN_STR(GATT_DISCOVERY_RESULT_EVT)
+    CASE_RETURN_STR(GATT_DISCOVERY_CPLT_EVT)
+    CASE_RETURN_STR(GATT_ATTRIBUTE_REQUEST_EVT)
+    CASE_RETURN_STR(GATT_CONGESTION_EVT)
+    CASE_RETURN_STR(GATT_GET_RESPONSE_BUFFER_EVT)
+    CASE_RETURN_STR(GATT_APP_BUFFER_TRANSMITTED_EVT)
+    }
+
+    return "UNKNOWN_STATUS";
+}
 /*******************************************************************************
 * Function Name: get_wifi_security_name
 ********************************************************************************

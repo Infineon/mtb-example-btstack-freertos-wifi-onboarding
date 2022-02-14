@@ -1,19 +1,16 @@
-# AnyCloud: Wi-Fi Onboarding Using Bluetooth&reg; LE
+# Wi-Fi Onboarding Using Bluetooth&reg; LE
 
 This example uses the Arm® Cortex®-M4 (CM4) CPU of PSoC® 6 MCU to communicate with the CYW43xxx combo devices and control the Wi-Fi and Bluetooth LE functionality. It uses Bluetooth LE on the combo device to help connect the Wi-Fi to the AP. It also enables low-power mode on Wi-Fi and Bluetooth LE.
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-anycloud-ble-wifi-onboarding)
 
-[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzAyMjMiLCJTcGVjIE51bWJlciI6IjAwMi0zMDIyMyIsIkRvYyBUaXRsZSI6IkFueUNsb3VkOiBXaS1GaSBPbmJvYXJkaW5nIFVzaW5nIEJsdWV0b290aCZyZWc7IExFIiwicmlkIjoiYW1rYSIsIkRvYyB2ZXJzaW9uIjoiMy4xLjAiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiSUNXIiwiRG9jIEZhbWlseSI6IldJRkkifQ==)
+[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzAyMjMiLCJTcGVjIE51bWJlciI6IjAwMi0zMDIyMyIsIkRvYyBUaXRsZSI6IldpLUZpIE9uYm9hcmRpbmcgVXNpbmcgQmx1ZXRvb3RoJnJlZzsgTEUiLCJyaWQiOiJhbWthIiwiRG9jIHZlcnNpb24iOiIzLjIuMCIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiV0lGSSJ9)
 
 
 ## Requirements
 
-- [ModusToolbox™ software](https://www.cypress.com/products/modustoolbox-software-environment) v2.3 (with patch 2.3.1)
-
-   **Note:** This code example version requires ModusToolbox software version 2.3 (patch 2.3.1) (with or later and is not backward compatible with v2.2 or older versions. If you cannot move to ModusToolbox v2.3, use the latest compatible version of this example: [latest-v2.X](https://github.com/Infineon/mtb-example-anycloud-ble-wifi-onboarding/tree/latest-v2.X).
-
-- Board support package (BSP) minimum required version: 2.0.0
+- [ModusToolbox&trade; software](https://www.cypress.com/products/modustoolbox-software-environment) v2.4
+- Board support package (BSP) minimum required version: 3.0.0
 - Programming language: C
 - Associated parts: All [PSoC&trade; 6 MCU](http://www.cypress.com/PSoC6) with [AIROC™ CYW43xxx Wi-Fi & Bluetooth® combo chips](https://www.cypress.com/products/airoc-wi-fi-combos)
 
@@ -33,6 +30,7 @@ This example uses the Arm® Cortex®-M4 (CM4) CPU of PSoC® 6 MCU to communicate
 - [PSoC 62S1 Wi-Fi Bluetooth pioneer kit](https://www.cypress.com/CYW9P62S1-43438EVB-01) (`CYW9P62S1-43438EVB-01`)
 - [PSoC&trade; 62S1 Wi-Fi Bluetooth&reg; pioneer kit](https://www.cypress.com/CYW9P62S1-43012EVB-01) (`CYW9P62S1-43012EVB-01`)
 - [PSoC 64 "Secure Boot" Wi-Fi Bluetooth pioneer kit](https://www.cypress.com/CY8CKIT-064B0S2-4343W) (`CY8CKIT-064B0S2-4343W`)
+- [PSoC&trade; 62S2 evaluation kit](https://www.cypress.com/CY8CEVAL-062S2) (`CY8CEVAL-062S2`, `CY8CEVAL-062S2-LAI-4373M2`, `CY8CEVAL-062S2-MUR-43439M2`)
 
 ## Hardware setup
 This example uses the kit’s default configuration. See the respective kit guide to ensure that the kit is configured correctly.
@@ -93,10 +91,10 @@ Argument | Description | Required/optional
 `--target-dir`| Specify the directory in which the application is to be created if you prefer not to use the default current working directory | Optional
 `--user-app-name`| Specify the name of the application if you prefer to have a name other than the example's default name | Optional
 
-The following example will clone the "[AnyCloud: Wi-Fi Onboarding Using Bluetooth&reg; LE](https://github.com/Infineon/mtb-example-anycloud-ble-wifi-onboarding)" application with the desired name "mtb-example-anycloud-ble-wifi-onboarding" configured for the *CY8CPROTO-062-4343W* BSP into the specified working directory, *C:/mtb_projects*:
+The following example will clone the "[Wi-Fi Onboarding Using Bluetooth&reg; LE](https://github.com/Infineon/mtb-example-anycloud-ble-wifi-onboarding)" application with the desired name "mtb-example-anycloud-ble-wifi-onboarding" configured for the *CY8CPROTO-062-4343W* BSP into the specified working directory, *C:/mtb_projects*:
 
    ```
-   project-creator-cli --board-id CY8CPROTO-062-4343W --app-id mtb-example-anycloud-ble-wifi-onboarding --user-app-name AnyCloud: Wi-Fi Onboarding Using Bluetooth&reg; LE--target-dir "C:/mtb_projects"
+   project-creator-cli --board-id CY8CPROTO-062-4343W --app-id mtb-example-anycloud-ble-wifi-onboarding --user-app-name Wi-Fi Onboarding Using Bluetooth&reg; LE--target-dir "C:/mtb_projects"
    ```
 
 **Note:** The project-creator-cli tool uses the `git clone` and `make getlibs` commands to fetch the repository and import the required libraries. For details, see the "Project creator tools" section of the [ModusToolbox&trade; software user guide](https://www.cypress.com/ModusToolboxUserGuide) (locally available at *{ModusToolbox&trade; software install directory}/docs_{version}/mtb_user_guide.pdf*).
@@ -334,6 +332,7 @@ Document title: *CE230223* - *mtb-example-anycloud-ble-wifi-onboarding*
 | 2.1.0   | Added support for CYSBSYSKIT-DEV-01|
 | 3.0.0   | BTSTACK version updated to 3.0<br>This update required that the example be used with ModusToolbox sofware 2.3 (with patch 2.3.1)|
 | 3.1.0   | Added new characteristics to the custom service |
+| 3.2.0   | Added support for 43439 kit |
 ------
 
 ![ifx-cy-banner.png](images/ifx-cy-banner.png)

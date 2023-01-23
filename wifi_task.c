@@ -8,7 +8,7 @@
  * Related Document: See Readme.md
  *
  *******************************************************************************
-* Copyright 2021-2022, Cypress Semiconductor Corporation (an Infineon company) or
+* Copyright 2021-2023, Cypress Semiconductor Corporation (an Infineon company) or
 * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
 *
 * This software, including source code, documentation and related
@@ -166,8 +166,8 @@ void wifi_task(void * arg)
             {
                 /* Configure the scan filter for SSID */
                 scan_filter.mode = CY_WCM_SCAN_FILTER_TYPE_SSID;
-                memcpy(scan_filter.param.SSID, wifi_conn_param.ap_credentials.SSID,
-                strlen((char *)wifi_conn_param.ap_credentials.SSID));
+                memcpy((char *)scan_filter.param.SSID,(char *)wifi_conn_param.ap_credentials.SSID,
+                strlen((char *)wifi_conn_param.ap_credentials.SSID) + 1);
                 printf("Starting scan with SSID: %s\n", scan_filter.param.SSID);
 
                 result = cy_wcm_start_scan(scan_callback, &ulNotifiedValue,

@@ -7,7 +7,7 @@
 * Related Document: See Readme.md
 *
 *******************************************************************************
-* Copyright 2021-2022, Cypress Semiconductor Corporation (an Infineon company) or
+* Copyright 2021-2023, Cypress Semiconductor Corporation (an Infineon company) or
 * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
 *
 * This software, including source code, documentation and related
@@ -316,7 +316,7 @@ wiced_result_t app_management_callback(wiced_bt_management_evt_t event,
     wiced_bt_dev_ble_io_caps_req_t *pairing_io_caps = &(p_event_data->
                                            pairing_io_capabilities_ble_request);
 
-    printf("Bluetooth Management Event: %s\n", get_bt_event_name(event));
+    printf("Bluetooth Management Event: %s\n", get_btm_event_name(event));
 
     switch (event)
     {

@@ -1,53 +1,54 @@
 # Wi-Fi Onboarding Using Bluetooth&reg; LE
 
-This example uses the Arm® Cortex®-M4 (CM4) CPU of PSoC® 6 MCU to communicate with the CYW43xxx combo devices and control the Wi-Fi and Bluetooth LE functionality. It uses Bluetooth LE on the combo device to help connect the Wi-Fi to the AP. It also enables low-power mode on Wi-Fi and Bluetooth LE.
+This example uses the Arm&reg; Cortex&reg;-M4 (CM4) CPU of PSoC&trade; 6 MCU to communicate with the CYW43xxx combo devices and control the Wi-Fi and Bluetooth LE functionality. It uses Bluetooth LE on the combo device to help connect the Wi-Fi to the AP. It also enables low-power mode on Wi-Fi and Bluetooth LE.
 
-[View this README on GitHub.](https://github.com/Infineon/mtb-example-anycloud-ble-wifi-onboarding)
+[View this README on GitHub.](https://github.com/Infineon/mtb-example-btstack-freertos-wifi-onboarding)
 
-[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzAyMjMiLCJTcGVjIE51bWJlciI6IjAwMi0zMDIyMyIsIkRvYyBUaXRsZSI6IldpLUZpIE9uYm9hcmRpbmcgVXNpbmcgQmx1ZXRvb3RoJnJlZzsgTEUiLCJyaWQiOiJhbWthIiwiRG9jIHZlcnNpb24iOiIzLjIuMCIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiV0lGSSJ9)
-
+[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzAyMjMiLCJTcGVjIE51bWJlciI6IjAwMi0zMDIyMyIsIkRvYyBUaXRsZSI6IldpLUZpIE9uYm9hcmRpbmcgVXNpbmcgQmx1ZXRvb3RoJnJlZzsgTEUiLCJyaWQiOiJhbWthIiwiRG9jIHZlcnNpb24iOiI0LjAuMCIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiV0lGSSJ9)
 
 ## Requirements
 
-- [ModusToolbox&trade; software](https://www.cypress.com/products/modustoolbox-software-environment) v2.4
-- Board support package (BSP) minimum required version: 3.0.0
+- [ModusToolbox&trade; software](https://www.infineon.com/modustoolbox) v3.0 or later (tested with v3.0)
+- Board support package (BSP) minimum required version: 4.0.0
 - Programming language: C
-- Associated parts: All [PSoC&trade; 6 MCU](http://www.cypress.com/PSoC6) with [AIROC™ CYW43xxx Wi-Fi & Bluetooth® combo chips](https://www.cypress.com/products/airoc-wi-fi-combos)
+- Associated parts: All [PSoC&trade; 6 MCU](https://www.infineon.com/cms/en/product/microcontroller/32-bit-psoc-arm-cortex-microcontroller/psoc-6-32-bit-arm-cortex-m4-mcu) parts, [AIROC&trade; CYW20819 Bluetooth&reg; & Bluetooth&reg; LE system on chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-bluetooth-le-bluetooth-multiprotocol/airoc-bluetooth-le-bluetooth/cyw20819), [AIROC&trade; CYW43012 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw43012), [AIROC&trade; CYW4343W Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw4343w), [AIROC&trade; CYW4373 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-5-802.11ac/cyw4373), [AIROC&trade; CYW43439 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw43439)
+
 
 ## Supported toolchains (make variable 'TOOLCHAIN')
 
-- GNU Arm embedded compiler v9.3.1 (GCC_ARM) - Default value of `TOOLCHAIN`
-- IAR C/C++ compiler v8.42.2 (IAR)
-- Arm&reg; compiler v6.13 (`ARM`)
+- GNU Arm&reg; embedded compiler v10.3.1 (`GCC_ARM`) - Default value of `TOOLCHAIN`
+- Arm&reg; compiler v6.16 (`ARM`)
+- IAR C/C++ compiler v9.30.1 (`IAR`)
 
 
 ## Supported kits
 
-- [PSoC 6 Wi-Fi Bluetooth® prototyping kit](https://www.cypress.com/CY8CPROTO-062-4343W) (`CY8CPROTO-062-4343W`) - Default target
-- [PSoC 62S2 Wi-Fi Bluetooth® pioneer kit](https://www.cypress.com/CY8CKIT-062S2-43012) (`CY8CKIT-062S2-43012`)
+- [PSoC&trade; 62S2 Wi-Fi Bluetooth&reg; pioneer kit](https://www.infineon.com/CY8CKIT-062S2-43012) (`CY8CKIT-062S2-43012`) – Default value of `TARGET`
 - Rapid IoT Connect Developer kit (`CYSBSYSKIT-DEV-01`)
-- [PSoC 6 WiFi-Bluetooth pioneer kit](https://www.cypress.com/CY8CKIT-062-WiFi-BT) (`CY8CKIT-062-WiFi-BT`)
-- [PSoC 62S1 Wi-Fi Bluetooth pioneer kit](https://www.cypress.com/CYW9P62S1-43438EVB-01) (`CYW9P62S1-43438EVB-01`)
-- [PSoC&trade; 62S1 Wi-Fi Bluetooth&reg; pioneer kit](https://www.cypress.com/CYW9P62S1-43012EVB-01) (`CYW9P62S1-43012EVB-01`)
-- [PSoC 64 "Secure Boot" Wi-Fi Bluetooth pioneer kit](https://www.cypress.com/CY8CKIT-064B0S2-4343W) (`CY8CKIT-064B0S2-4343W`)
-- [PSoC&trade; 62S2 evaluation kit](https://www.cypress.com/CY8CEVAL-062S2) (`CY8CEVAL-062S2`, `CY8CEVAL-062S2-LAI-4373M2`, `CY8CEVAL-062S2-MUR-43439M2`)
+- [PSoC&trade; 6 Wi-Fi Bluetooth&reg; pioneer kit](https://www.infineon.com/CY8CKIT-062-WIFI-BT) (`CY8CKIT-062-WIFI-BT`)
+- [PSoC&trade; 62S1 Wi-Fi Bluetooth&reg; pioneer kit](https://www.infineon.com/CYW9P62S1-43438EVB-01) (`CYW9P62S1-43438EVB-01`)
+- [PSoC&trade; 62S1 Wi-Fi Bluetooth&reg; pioneer kit](https://www.infineon.com/CYW9P62S1-43012EVB-01) (`CYW9P62S1-43012EVB-01`)
+- [PSoC&trade; 62S2 evaluation kit](https://www.infineon.com/CY8CEVAL-062S2) (`CY8CEVAL-062S2-LAI-4373M2`)
 
 ## Hardware setup
-This example uses the kit’s default configuration. See the respective kit guide to ensure that the kit is configured correctly.
+
+This example uses the board's default configuration. See the kit user guide to ensure that the board is configured correctly.
+
+**Note:** The PSoC&trade; 6 Bluetooth&reg; LE pioneer kit (CY8CKIT-062-BLE) and the PSoC&trade; 6 Wi-Fi Bluetooth&reg; pioneer kit (CY8CKIT-062-WIFI-BT) ship with KitProg2 installed. The ModusToolbox&trade; software requires KitProg3. Before using this code example, make sure that the board is upgraded to KitProg3. The tool and instructions are available in the [Firmware Loader](https://github.com/Infineon/Firmware-loader) GitHub repository. If you do not upgrade, you will see an error like "unable to find CMSIS-DAP device" or "KitProg firmware is out of date".
 
 ## Software setup
 
-* This code example consists of two parts: a Bluetooth LE GAP Peripheral and a Bluetooth LE GAP Central.
+**Note:** This code example consists of two parts: a Bluetooth LE GAP Peripheral and a Bluetooth LE GAP Central.
 
-   For the Bluetooth LE GAP Central, download and install the CySmart™ app for [iOS](https://itunes.apple.com/us/app/cysmart/id928939093?mt=8) or [Android](https://play.google.com/store/apps/details?id=com.cypress.cysmart&hl=en).
+For the Bluetooth LE GAP Central, download and install the AIROC&trade; Bluetooth&reg; Connect App for [Android](https://play.google.com/store/apps/details?id=com.infineon.airocbluetoothconnect).
 
-   You can also use the [CySmart Host Emulation Tool](http://www.cypress.com/go/cysmart) Windows PC application if you have access to the [CY5677 CySmart BLE 4.2 USB Dongle](http://www.cypress.com/documentation/development-kitsboards/cy5677-cysmart-bluetooth-low-energy-ble-42-usb-dongle).
+Scan the following QR code from your mobile phone to download the AIROC&trade; Bluetooth&reg; Connect mobile app.
 
-   Scan the following QR codes from your mobile phone to download the CySmart app.
+![AppQR](images/qr.png)
 
-   ![AppQR](./images/qr.png)
+**Note:** AIROC&trade; Bluetooth&reg; Connect App for iOS is coming soon on App Store. If you are using an iPhone, optionally you can download and install Lightblue app.
 
-* Install a terminal emulator if you don't have one. Instructions in this document use [Tera Term](https://ttssh2.osdn.jp/index.html.en).
+Install a terminal emulator if you don't have one. instructions in this document use [Tera Term](https://ttssh2.osdn.jp/index.html.en). all other required software come bundled with the Eclipse IDE for ModusToolbox&trade; software.
 
 ## Using the code example
 
@@ -55,25 +56,26 @@ Create the project and open it using one of the following:
 
 <details><summary><b>In Eclipse IDE for ModusToolbox&trade; software</b></summary>
 
-1. Click the **New Application** link in the **Quick Panel** (or, use **File** > **New** > **ModusToolbox Application**). This launches the [Project Creator](https://www.cypress.com/ModusToolboxProjectCreator) tool.
+1. Click the **New Application** link in the **Quick Panel** (or, use **File** > **New** > **ModusToolbox&trade; Application**). This launches the [Project Creator](https://www.infineon.com/ModusToolboxProjectCreator) tool.
 
 2. Pick a kit supported by the code example from the list shown in the **Project Creator - Choose Board Support Package (BSP)** dialog.
 
-   When you select a supported kit, the example is reconfigured automatically to work with the kit. To work with a different supported kit later, use the **Library Manager** to choose the BSP for the supported kit. You can use the Library Manager to select or update the BSP and firmware libraries used in this application. 
-   
-   To access the Library Manager, right-click the application name from the Project Workspace window in the IDE, and select **ModusToolbox** > **Library Manager** (or select it from the **Quick Panel**).
+   When you select a supported kit, the example is reconfigured automatically to work with the kit. To work with a different supported kit later, use the [Library Manager](https://www.infineon.com/ModusToolboxLibraryManager) to choose the BSP for the supported kit. You can use the Library Manager to select or update the BSP and firmware libraries used in this application. To access the Library Manager, click the link from the **Quick Panel**.
 
    You can also just start the application creation process again and select a different kit.
 
    If you want to use the application for a kit not listed here, you may need to update the source files. If the kit does not have the required resources, the application may not work.
 
-3. In the **Project Creator - Select Application** dialog, choose the example.
+3. In the **Project Creator - Select Application** dialog, choose the example by enabling the checkbox.
 
-4. Optionally, update the **Application Name** and **Location** fields with the application name and local path where the application is created.
+4. (Optional) Change the suggested **New Application Name**.
 
-5. Click **Create** to complete the application creation process.
+5. The **Application(s) Root Path** defaults to the Eclipse workspace which is usually the desired location for the application. If you want to store the application in a different location, you can change the *Application(s) Root Path* value. Applications that share libraries should be in the same root path.
 
-   For more details, see the Eclipse IDE for ModusToolbox User Guide: *{ModusToolbox install directory}/ide_{version}/docs/mt_ide_user_guide.pdf*.
+6. Click **Create** to complete the application creation process.
+
+For more details, see the [Eclipse IDE for ModusToolbox&trade; software user guide](https://www.infineon.com/MTBEclipseIDEUserGuide) (locally available at *{ModusToolbox&trade; software install directory}/docs_{version}/mt_ide_user_guide.pdf*).
+
 </details>
 
 <details><summary><b>In command-line interface (CLI)</b></summary>
@@ -82,7 +84,7 @@ ModusToolbox&trade; software provides the Project Creator as both a GUI tool and
 
 Use a CLI terminal to invoke the "project-creator-cli" tool. On Windows, use the command line "modus-shell" program provided in the ModusToolbox&trade; software installation instead of a standard Windows command-line application. This shell provides access to all ModusToolbox&trade; software tools. You can access it by typing `modus-shell` in the search box in the Windows menu. In Linux and macOS, you can use any terminal application.
 
-This tool has the following arguments:
+The "project-creator-cli" tool has the following arguments:
 
 Argument | Description | Required/optional
 ---------|-------------|-----------
@@ -91,56 +93,95 @@ Argument | Description | Required/optional
 `--target-dir`| Specify the directory in which the application is to be created if you prefer not to use the default current working directory | Optional
 `--user-app-name`| Specify the name of the application if you prefer to have a name other than the example's default name | Optional
 
-The following example will clone the "[Wi-Fi Onboarding Using Bluetooth&reg; LE](https://github.com/Infineon/mtb-example-anycloud-ble-wifi-onboarding)" application with the desired name "mtb-example-anycloud-ble-wifi-onboarding" configured for the *CY8CPROTO-062-4343W* BSP into the specified working directory, *C:/mtb_projects*:
+<br />
+
+The following example clones the "[Wi-Fi Onboarding](https://github.com/Infineon/mtb-example-btstack-freertos-wifi-onboarding)" application with the desired name "WiFiOnboarding" configured for the *CY8CKIT-062-WIFI-BT* BSP into the specified working directory, *C:/mtb_projects*:
 
    ```
-   project-creator-cli --board-id CY8CPROTO-062-4343W --app-id mtb-example-anycloud-ble-wifi-onboarding --user-app-name Wi-Fi Onboarding Using Bluetooth&reg; LE--target-dir "C:/mtb_projects"
+   project-creator-cli --board-id CY8CKIT-062-WIFI-BT --app-id mtb-example-btstack-freertos-wifi-onboarding --user-app-name WiFiOnboarding Using Bluetooth&reg; LE--target-dir "C:/mtb_projects"
    ```
 
-**Note:** The project-creator-cli tool uses the `git clone` and `make getlibs` commands to fetch the repository and import the required libraries. For details, see the "Project creator tools" section of the [ModusToolbox&trade; software user guide](https://www.cypress.com/ModusToolboxUserGuide) (locally available at *{ModusToolbox&trade; software install directory}/docs_{version}/mtb_user_guide.pdf*).
+**Note:** The project-creator-cli tool uses the `git clone` and `make getlibs` commands to fetch the repository and import the required libraries. For details, see the "Project creator tools" section of the [ModusToolbox&trade; software user guide](https://www.infineon.com/ModusToolboxUserGuide) (locally available at *{ModusToolbox&trade; software install directory}/docs_{version}/mtb_user_guide.pdf*).
 
+To work with a different supported kit later, use the [Library Manager](https://www.infineon.com/ModusToolboxLibraryManager) to choose the BSP for the supported kit. You can invoke the Library Manager GUI tool from the terminal using `make library-manager` command or use the Library Manager CLI tool "library-manager-cli" to change the BSP.
 
-   On Linux and macOS, you can use any terminal application. On Windows, navigate to the modus-shell directory (*{ModusToolbox install directory}/tools_\<version>/modus-shell*) and run *Cygwin.bat*.
+The "library-manager-cli" tool has the following arguments:
 
-3. Import the required libraries by executing the `make getlibs` command.
+Argument | Description | Required/optional
+---------|-------------|-----------
+`--add-bsp-name` | Name of the BSP that should be added to the application | Required
+`--set-active-bsp` | Name of the BSP that should be as active BSP for the application | Required
+`--add-bsp-version`| Specify the version of the BSP that should be added to the application if you do not wish to use the latest from manifest | Optional
+`--add-bsp-location`| Specify the location of the BSP (local/shared) if you prefer to add the BSP in a shared path | Optional
+
+<br />
+
+Following example adds the CY8CPROTO-062-4343W BSP to the already created application and makes it the active BSP for the app:
+
+   ```
+   library-manager-cli --project "C:/mtb_projects/WiFiOnboarding" --add-bsp-name CY8CPROTO-062-4343W --add-bsp-version "latest-v4.X" --add-bsp-location "local"
+
+   library-manager-cli --project "C:/mtb_projects/WiFiOnboarding" --set-active-bsp APP_CY8CPROTO-062-4343W
+   ```
+
 </details>
+
 <details><summary><b>In third-party IDEs</b></summary>
 
-1. Follow the instructions from the [CLI] section to download or clone the repository, and import the libraries using the `make getlibs` command.
+Use one of the following options:
 
-2. Export the application to a supported IDE using the `make <ide>` command.
+- **Use the standalone [Project Creator](https://www.infineon.com/ModusToolboxProjectCreator) tool:**
 
-3. Follow the instructions displayed in the terminal to create or import the application as an IDE project.
+   1. Launch Project Creator from the Windows Start menu or from *{ModusToolbox&trade; software install directory}/tools_{version}/project-creator/project-creator.exe*.
 
-   For more details, see the "Exporting to IDEs" section of the ModusToolbox User Guide: *{ModusToolbox install directory}/ide_{version}/docs/mtb_user_guide.pdf*.
+   2. In the initial **Choose Board Support Package** screen, select the BSP, and click **Next**.
+
+   3. In the **Select Application** screen, select the appropriate IDE from the **Target IDE** drop-down menu.
+
+   4. Click **Create** and follow the instructions printed in the bottom pane to import or open the exported project in the respective IDE.
+
+<br />
+
+- **Use command-line interface (CLI):**
+
+   1. Follow the instructions from the **In command-line interface (CLI)** section to create the application.
+
+   2. Export the application to a supported IDE using the `make <ide>` command.
+
+   3. Follow the instructions displayed in the terminal to create or import the application as an IDE project.
+
+For a list of supported IDEs and more details, see the "Exporting to IDEs" section of the [ModusToolbox&trade; software user guide](https://www.infineon.com/ModusToolboxUserGuide) (locally available at *{ModusToolbox&trade; software install directory}/docs_{version}/mtb_user_guide.pdf*).
+
 </details>
+
+
 ## Operation
+
+If using a PSoC&trade; 64 "Secure" MCU kit (like CY8CKIT-064B0S2-4343W), the PSoC&trade; 64 device must be provisioned with keys and policies before being programmed. Follow the instructions in the ["Secure Boot" SDK user guide](https://www.infineon.com/dgdlac/Infineon-PSoC_64_Secure_MCU_Secure_Boot_SDK_User_Guide-Software-v07_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0f8c361a7666) to provision the device. If the kit is already provisioned, copy-paste the keys and policy folder to the application folder.
 
 1. Connect the board to your PC using the provided USB cable through the KitProg3 USB connector.
 
-2. Use your favorite serial terminal application and connect to the KitProg3 COM port. Configure the terminal application to access the serial port using the following settings:
-
-   Baud rate : 115200 bps; Data: 8 bits; Parity : None; stop : 1 bit; Flow control : None; New line for receive data : Line Feed(LF) or Auto setting
+2. Open a terminal program and select the KitProg3 COM port. Set the serial port parameters to 8N1 and 115200 baud.
 
 3. Program the board using one of the following:
 
    <details><summary><b>Using Eclipse IDE for ModusToolbox&trade; software</b></summary>
 
-        1. Select the application project in the Project Explorer.
+      1. Select the application project in the Project Explorer.
 
       2. In the **Quick Panel**, scroll down, and click **\<Application Name> Program (KitProg3_MiniProg4)**.
    </details>
 
    <details><summary><b>Using CLI</b></summary>
 
-     From the terminal, execute the `make program` command to build and program the application using the default toolchain to the default target. The default toolchain and target are specified in the application's Makefile but you can override those values manually:
+     From the terminal, execute the `make program` command to build and program the application using the default toolchain to the default target. The default toolchain is specified in the application's Makefile but you can override this value manually:
       ```
-      make program TARGET=<BSP> TOOLCHAIN=<toolchain>
+      make program TOOLCHAIN=<toolchain>
       ```
 
       Example:
       ```
-      make program TARGET=CY8CPROTO-062-4343W TOOLCHAIN=GCC_ARM
+      make program TOOLCHAIN=GCC_ARM
       ```
    </details>
 
@@ -151,76 +192,56 @@ The following example will clone the "[Wi-Fi Onboarding Using Bluetooth&reg; LE]
      **Figure 1. Boot-up Log**
      ![Figure 1](./images/figure-1.png)
 
-4. Do the following to test using the CySmart desktop application (If you prefer to use the Android or iOS version of CySmart, skip to the next section):
-
-   1. Open the [CySmart desktop application](https://www.cypress.com/documentation/software-and-drivers/cysmart-bluetooth-le-test-and-debug-tool) and connect to the [CySmart CY5677 dongle](http://www.cypress.com/cy5677) (Central device). See the [CySmart user guide](https://www.cypress.com/file/232316/download) to learn how to use the desktop application.
-
-   2. Using the CySmart desktop application, **scan** and **connect** to **'bleProv'** device.
-
-   3. Click on **Pair** to start pairing.
-
-   4. Click **Discover All Attributes**. Click on **Enable All Notifications**.
-
-   5. Select the attribute with the handle **0x0015** (UUID ending in 67). In the **Attribute Details** tab, send the value **02** and click on **Write Value** or **Write Value Without Response**. This will start Wi-Fi scan on the device and send the nearby network details as notifications in the characteristic with UUID ending in 66. The data is in the Type, Length, Value (TLV) format. The first byte gives the type which is **1** for SSID and **2** for security details. The next byte gives the length of the data. After this data there will be another type byte followed by length and data. The security value consists of 4 bytes (little-endian) which needs to be combined into a 32-bit value.
-
-   6. To connect to the Wi-Fi network you need to send SSID and password data to the client device. You can select one of the networks which was discovered during scan or you can give another set of details. If the given network is not available then the device will store the values and try to connect on next restart. Note that the data is stored in non-volatile storage only when the connect command is sent. There are two ways to send the WiFi credentials. Either send the WiFi SSID and password separately or together.
-
-      1. Send SSID and password separately
-
-         1. Select the attribute with the device handle **0x0009** (UUID ending in 63). In the **Attribute Details** tab, copy your Wi-Fi SSID in hex format and click **Write Value** or **Write Value Without Response**.
-
-            **Figure 2. Writing to SSID Characteristic**
-            ![Figure 2](./images/figure-2.png)
-
-         2. Select the attribute with the device handle **0x000C** (UUID ending in 64). In the **Attribute Details** tab, copy your Wi-Fi password in hex format and click **Write Value** or **Write Value Without Response**.
-
-      2. Send the SSID and password together
-
-         1. Format the SSID and password data in TLV format. For SSID the type value is 1 and for password the type value is 2. The first byte of the data should be type and for this example it will be 1 for SSID followed by length of the SSID and then the SSID data which is in hex format. This is followed by TLV value for password. For e.g if the SSID is **WIFISSID** and password is **PASSWORD** then the formatted value will be:
-
-         ```
-         01 08 57 49 46 49 53 53 49 44 02 08 50 41 53 53 57 4f 52 44
-         ``` 
-
-         2. Select the attribute with the device handle **0x000F** (UUID ending in 65). In the **Attribute Details** tab, copy your formatted data and click **Write Value** or **Write Value Without Response**.
-
-   7. Select the attribute with the device handle **0x0016** (UUID ending in 67). In the **Attribute Details** tab, write '1' and click **Write Value** or **Write Value Without Response**. The device will now try to connect to the given Wi-Fi network. If the connection is successful then the server will send a notification with value 1 otherwise with value 0.
-
-      **Figure 3. Connection Log**
-      ![Figure 3](./images/figure-3.png)
-
-   8. Select the attribute with the device handle **0x0016**. In the **Attribute Details** tab, write '0', and click **Write Value** or **Write Value Without Response**. The device will now try to disconnect from the Wi-Fi network. The server will send a notification with value 0.
-
-      **Note:** You can use an online tool for converting the SSID and password from string to hex but be careful about where you type in your password. Alternatively, you can use the CySmart mobile app which accepts inputs in the string format rather than hex.
-
-5. Do the following to test using the CySmart mobile app:
+5. Do the following to test using the AIROC&trade; Bluetooth&reg; Connect mobile app:
 
     1. Turn ON Bluetooth on your Android or iOS device.
 
-    2. Launch the CySmart app.
+    2. Launch the AIROC&trade; Bluetooth&reg; Connect app.
 
     3. Press the reset switch on the kit to start sending advertisements.
 
-    4. Swipe down on the CySmart app home screen to start scanning for Bluetooth LE Peripherals. Your device (“bleProv”) appears in the CySmart app home screen. Select your device to establish a Bluetooth LE connection.
+    4. Swipe down on the AIROC&trade; Bluetooth&reg; Connect app home screen to start scanning for Bluetooth LE Peripherals. Your device (“bleProv”) appears in the AIROC&trade; Bluetooth&reg; Connect app home screen. Select your device to establish a Bluetooth LE connection.
 
     5. Select the **GATT DB** Profile from the carousel view then select **Unknown Service**.
 
-    6. To scan for the availabe Wi-Fi networks, select the characteristic with UUID ending in **67**. Select **Notify**. Write hex value 2 to this characterisitc. The device will start scanning and send the network details as notifications. More details were given previously.
+    6. To scan for the availabe Wi-Fi networks, enable the notifications in the characteristic with UUID ending in **66**, then select the characteristic with UUID ending in **67** and Select **Notify**. Write hex value 2 to this characterisitc. The device will start scanning and send the network details as notifications in the characteristic with UUID ending in 66. The data is in the Type, Length, Value (TLV) format. The first byte gives the type which is **1** for SSID and **2** for security details. The next byte gives the length of the data. After this data there will be another type byte followed by length and data. The security value consists of 4 bytes (little-endian) which needs to be combined into a 32-bit value.
 
-    7. As described above there are two ways to send the WiFi credentials. Follow the above steps on how to send the data in different characteristics. In the mobile app the data can be input in the ASCII as well as hex format. If you are sending SSID and password separately then it is easier to input the data directly in the ASCII format. If you are sending them together then you have to use the hex format as the type and length values are in hex format.
+       **Note:** If the notifications are not enabled in the characteristic with UUID ending in 66 the scan will not be started as there is no way to report available networks to the user. The user can still connect to a network by entering WIFI SSID (in UUID ending with 63), Password (in UUID ending with 64) and then initiating the connect request by writing '1' in WIFI control chanracteristic (in UUID ending with 67).
 
-    8. Select the attribute with the UUID ending in **67**. Select **Notify** (if not already done earlier). Write hex value 1 to this characteristic to connect to the WiFi network. If the connection is successful then the server will send a notification with value 1 otherwise with value 0.
+    7. To connect to the Wi-Fi network you need to send SSID and password data to the client device. You can select one of the networks which was discovered during scan or you can give another set of details. If the given network is not available then the device will store the values and try to connect on next restart. Note that the data is stored in non-volatile storage only when the connect command is sent. There are two ways to send the WiFi credentials. Either send the WiFi SSID and password separately or together.
 
-       **Figure 4. CySmart App Flow**
-      ![Figure 4](./images/figure-4.png)
+       1. Send SSID and password separately
+           1. Select the UUID ending in 63. Write your Wi-Fi SSID in hex or ASCII format.
+           2. Select the UUID ending in 64. Write your Wi-Fi password in hex or ASCII format.
+       2. Send the SSID and password together
+           1. Format the SSID and password data in TLV format. For SSID the type value is 1 and for password the type value is 2. The first byte of the data should be type and for this example it will be 1 for SSID followed by length of the SSID and then the SSID data which is in hex format. This is followed by TLV value for password. For e.g if the SSID is WIFISSID and password is PASSWORD then the formatted value will be:
+
+           ```
+           01 08 57 49 46 49 53 53 49 44 02 08 50 41 53 53 57 4f 52 44
+           ```
+           2. Select the UUID ending in 65. Write your formatted data
+
+    8. If you are sending SSID and password separately then it is easier to input the data directly in the ASCII format. If you are sending them together then you have to use the hex format as the type and length values are in hex format.
+
+       **Note:** You can use an online tool for converting the SSID and password from string to hex but be careful about where you type in your password.
+
+       **Figure 2. AIROC&trade; Bluetooth&reg; Connect App Flow**
+       
+      ![Figure 2](./images/figure-2.png)
+
+    9. Select the attribute with the UUID ending in **67**. Select **Notify** (if not already done earlier). Write hex value 1 to this characteristic to connect to the WiFi network. If the connection is successful then the server will send a notification with value 1 otherwise with value 0.
+
+       **Figure 3. Connection Log**
+
+      ![Figure 3](./images/figure-3.png)
 
 6. Once the Wi-Fi SSID and password is provided by the client it is stored in the EEPROM. To delete this data the user needs to press User Button.
 
 ## Debugging
 
-You can debug the example to step through the code. In the IDE, use the **\<Application Name> Debug (KitProg3_MiniProg4)** configuration in the **Quick Panel**. For more details, see the "Program and Debug" section in the [Eclipse IDE for ModusToolbox User Guide](https://www.cypress.com/MTBEclipseIDEUserGuide).
+You can debug the example to step through the code. In the IDE, use the **\<Application Name> Debug (KitProg3_MiniProg4)** configuration in the **Quick Panel**. For details, see the "Program and debug" section in the [Eclipse IDE for ModusToolbox&trade; software user guide](https://www.infineon.com/MTBEclipseIDEUserGuide).
 
-**Note:** **(Only while debugging)** On the CM4 CPU, some code in `main()` may execute before the debugger halts at the beginning of `main()`. This means that some code executes twice - once before the debugger stops execution, and again after the debugger resets the program counter to the beginning of `main()`. See [KBA231071](https://community.cypress.com/docs/DOC-21143) to learn about this and for the workaround.
+**Note:** **(Only while debugging)** On the CM4 CPU, some code in `main()` may execute before the debugger halts at the beginning of `main()`. This means that some code executes twice – once before the debugger stops execution, and again after the debugger resets the program counter to the beginning of `main()`. See [KBA231071](https://community.infineon.com/docs/DOC-21143) to learn about this and for the workaround.
 
 
 ## Design and implementation
@@ -287,60 +308,54 @@ To enable Low Power in your design you can refer to the Cypress **Low Power Assi
 This section explains the ModusToolbox resources and their configuration as used in this code example. Note that all the configuration explained in this section has already been done in the code example. The ModusToolbox IDE stores the configuration settings of the application in the *design.modus* file. This file is used by the graphical configurators, which generate the configuration firmware. This firmware is stored in the application’s *GeneratedSource* folder.
 
 - **Device Configurator:** The Device Configurator is used to enable/configure the peripherals and the pins used in the application. See the
-[Device Configurator Guide](https://www.cypress.com/ModusToolboxDeviceConfig).
+[Device Configurator Guide](https://www.infineon.com/dgdl/Infineon-ModusToolbox_Device_Configurator_Guide_4-UserManual-v01_00-EN.pdf?fileId=8ac78c8c7d718a49017d99ab297631cb&utm_source=cypress&utm_medium=referral&utm_campaign=202110_globe_en_all_integration-files).
 
 - **Bluetooth Configurator:** The Bluetooth Configurator is used for generating/modifying the Bluetooth LE GATT database. See the
-[Bluetooth Configurator Guide](https://www.cypress.com/ModusToolboxBLEConfig).
+[Bluetooth Configurator Guide](https://www.infineon.com/dgdl/Infineon-ModusToolbox_Bluetooth_Configurator_Guide_3-UserManual-v01_00-EN.pdf?fileId=8ac78c8c7d718a49017d99aaf5b231be&utm_source=cypress&utm_medium=referral&utm_campaign=202110_globe_en_all_integration-files).
 
 ## Related resources
 
-| Application Notes                                            |                                                              |
-| :----------------------------------------------------------- | :----------------------------------------------------------- |
-| [AN228571](https://www.cypress.com/AN228571) – Getting Started with PSoC 6 MCU on ModusToolbox | Describes PSoC 6 MCU devices and how to build your first application with ModusToolbox |
-| [AN221774](https://www.cypress.com/AN221774) – Getting Started with PSoC 6 MCU on PSoC Creator | Describes PSoC 6 MCU devices and how to build your first application with PSoC Creator |
-| [AN210781](https://www.cypress.com/AN210781) – Getting Started with PSoC 6 MCU with Bluetooth Low Energy (BLE) Connectivity on PSoC Creator | Describes PSoC 6 MCU with BLE Connectivity devices and how to build your first application with PSoC Creator |
-| [AN215656](https://www.cypress.com/AN215656) – PSoC 6 MCU: Dual-CPU System Design | Describes the dual-CPU architecture in PSoC 6 MCU, and shows how to build a simple dual-CPU design |
-| **Code Examples**                                            |                                                              |
-| [Using ModusToolbox](https://github.com/cypresssemiconductorco/Code-Examples-for-ModusToolbox-Software) | [Using PSoC Creator](https://www.cypress.com/documentation/code-examples/psoc-6-mcu-code-examples) |
-| **Device Documentation**                                     |                                                              |
-| [PSoC 6 MCU Datasheets](https://www.cypress.com/search/all?f[0]=meta_type%3Atechnical_documents&f[1]=resource_meta_type%3A575&f[2]=field_related_products%3A114026) | [PSoC 6 Technical Reference Manuals](https://www.cypress.com/search/all/PSoC%206%20Technical%20Reference%20Manual?f[0]=meta_type%3Atechnical_documents&f[1]=resource_meta_type%3A583) |
-| **Development Kits**                                         | Buy at www.cypress.com                                       |
-| [CY8CKIT-062-BLE](https://www.cypress.com/CY8CKIT-062-BLE) PSoC 6 BLE Pioneer Kit | [CY8CKIT-062-WiFi-BT](https://www.cypress.com/CY8CKIT-062-WiFi-BT) PSoC 6 WiFi-BT Pioneer Kit |
-| [CY8CPROTO-063-BLE](https://www.cypress.com/CY8CPROTO-063-BLE) PSoC 6 BLE Prototyping Kit | [CY8CPROTO-062-4343W](https://www.cypress.com/CY8CPROTO-062-4343W) PSoC 6 Wi-Fi BT Prototyping Kit |
-| [CY8CKIT-062S2-43012](https://www.cypress.com/CY8CKIT-062S2-43012) PSoC 62S2 Wi-Fi BT Pioneer Kit | [CY8CPROTO-062S3-4343W](https://www.cypress.com/CY8CPROTO-062S3-4343W) PSoC 62S3 Wi-Fi BT Prototyping Kit |
-| [CYW9P62S1-43438EVB-01](https://www.cypress.com/CYW9P62S1-43438EVB-01) PSoC 62S1 Wi-Fi BT Pioneer Kit | [CYW9P62S1-43012EVB-01](https://www.cypress.com/CYW9P62S1-43012EVB-01) PSoC 62S1 Wi-Fi BT Pioneer Kit |
-|  CYSBSYSKIT-DEV-01 Rapid IoT Connect Developer Kit |
-| **Libraries**                                                 |                                                              |
-| PSoC 6 Peripheral Driver Library (PDL) and docs  | [mtb-pdl-cat1](https://github.com/Infineon/mtb-pdl-cat1) on GitHub |
-| Cypress Hardware Abstraction Layer (HAL) Library and docs    | [mtb-hal-cat1](https://github.com/Infineon/mtb-hal-cat1) on GitHub |
-| RetargetIO - A utility library to retarget the standard input/output (STDIO) messages to a UART port | [retarget-io](https://github.com/Infineon/retarget-io) on GitHub |
-| freeRTOS library and docs                                    | [freeRTOS](https://github.com/Infineon/freertos) on GitHub |
-| **Middleware**                                               |                                                              |
-| CapSense library and docs                                    | [capsense](https://github.com/Infineon/capsense) on GitHub |
-| Links to all PSoC 6 MCU Middleware                           | [psoc6-middleware](https://github.com/Infineon/modustoolbox-software) on GitHub |
-| **Tools**                                                    |                                                              |
-| [Eclipse IDE for ModusToolbox&trade; software](https://www.cypress.com/modustoolbox) | ModusToolbox&trade software is a collection of easy-to-use software and tools enabling rapid development with Infineon MCUs, covering applications from embedded sense and control to wireless and cloud-connected systems using AIROC&trade; Wi-Fi and Bluetooth® connectivity devices. |
+
+Resources  | Links
+-----------|----------------------------------
+Application notes  | [AN228571](https://www.infineon.com/AN228571) – Getting started with PSoC&trade; 6 MCU on ModusToolbox&trade; software <br /> [AN215656](https://www.infineon.com/AN215656) – PSoC&trade; 6 MCU: Dual-CPU system design <br /> [AN79953](https://www.infineon.com/AN79953) – Getting started with PSoC&trade; 4 <br /> [AN85951](https://www.infineon.com/AN85951) – PSoC&trade; 4 and PSoC&trade; 6 MCU CAPSENSE&trade; design guide
+Code examples  | [Using ModusToolbox&trade; software](https://github.com/Infineon/Code-Examples-for-ModusToolbox-Software) on GitHub <br /> [Using PSoC&trade; Creator](https://www.infineon.com/cms/en/design-support/software/code-examples/psoc-3-4-5-code-examples-for-psoc-creator)
+Device documentation | [PSoC&trade; 6 MCU datasheets](https://documentation.infineon.com/html/psoc6/bnm1651211483724.html) <br /> [PSoC&trade; 6 technical reference manuals](https://documentation.infineon.com/html/psoc6/zrs1651212645947.html)<br /> [PSoC&trade; 4 datasheets](https://www.infineon.com/cms/en/search.html?intc=searchkwr-return#!view=downloads&term=psoc%204&doc_group=Data%20Sheet) <br /> [PSoC&trade; 4 technical reference manuals](https://www.infineon.com/cms/en/search.html#!term=psoc%204%20technical%20reference%20manual&view=all)
+Development kits | Select your kits from the [evaluation board finder](https://www.infineon.com/cms/en/design-support/finder-selection-tools/product-finder/evaluation-board)
+Libraries on GitHub  | [mtb-pdl-cat1](https://github.com/Infineon/mtb-pdl-cat1) – PSoC&trade; 6 peripheral driver library (PDL) <br /> [mtb-hal-cat1](https://github.com/Infineon/mtb-hal-cat1) – Hardware abstraction layer (HAL) library <br /> [retarget-io](https://github.com/Infineon/retarget-io) – Utility library to retarget STDIO messages to a UART port <br /> [mtb-pdl-cat2](https://github.com/Infineon/mtb-pdl-cat2) – PSoC&trade; 4 peripheral driver library (PDL) <br /> [mtb-hal-cat2](https://github.com/Infineon/mtb-hal-cat2) – Hardware abstraction layer (HAL) library
+Middleware on GitHub  | [capsense](https://github.com/Infineon/capsense) – CAPSENSE&trade; library and documents <br /> [psoc6-middleware](https://github.com/Infineon/modustoolbox-software#psoc-6-middleware-libraries) – Links to all PSoC&trade; 6 MCU middleware
+Tools  | [Eclipse IDE for ModusToolbox&trade; software](https://www.infineon.com/modustoolbox) – ModusToolbox&trade; software is a collection of easy-to-use software and tools enabling rapid development with Infineon MCUs, covering applications from embedded sense and control to wireless and cloud-connected systems using AIROC&trade; Wi-Fi and Bluetooth&reg; connectivity devices. <br /> [PSoC&trade; Creator](https://www.infineon.com/cms/en/design-support/tools/sdk/psoc-software/psoc-creator/) – IDE for PSoC&trade; and FM0+ MCU development
+
+<br />
+
+## Other resources
+
+
+Infineon provides a wealth of data at www.infineon.com to help you select the right device, and quickly and effectively integrate it into your design.
+
+For PSoC&trade; 6 MCU devices, see [How to design with PSoC&trade; 6 MCU - KBA223067](https://community.infineon.com/docs/DOC-14644) in the Infineon Developer community.
+
 
 ## Document history
 
-Document title: *CE230223* - *mtb-example-anycloud-ble-wifi-onboarding*
+Document title: *CE230223* - *Wi-Fi Onboarding Using Bluetooth&reg; LE*
 
 | Version | Description of Change |
 | ------- | --------------------- |
 | 1.0.0   | New code example      |
-| 2.0.0   | Major update to support ModusToolbox software v2.2<br> This version is not backward compatible with ModusToolbox software v2.1  |
+| 2.0.0   | Major update to support ModusToolbox software v2.2<br /> This version is not backward compatible with ModusToolbox software v2.1  |
 | 2.1.0   | Added support for CYSBSYSKIT-DEV-01|
-| 3.0.0   | BTSTACK version updated to 3.0<br>This update required that the example be used with ModusToolbox sofware 2.3 (with patch 2.3.1)|
+| 3.0.0   | BTSTACK version updated to 3.0<br />This update required that the example be used with ModusToolbox sofware 2.3 (with patch 2.3.1)|
 | 3.1.0   | Added new characteristics to the custom service |
 | 3.2.0   | Added support for 43439 kit |
-------
+| 4.0.0   | Updated to support ModusToolbox&trade; software v3.0 and BSPs v4.X
+<br />
 
-![ifx-cy-banner.png](images/ifx-cy-banner.png)
 
 ---------------------------------------------------------
 
-© Cypress Semiconductor Corporation, 2020-2021. This document is the property of Cypress Semiconductor Corporation, an Infineon Technologies company, and its affiliates ("Cypress").  This document, including any software or firmware included or referenced in this document ("Software"), is owned by Cypress under the intellectual property laws and treaties of the United States and other countries worldwide.  Cypress reserves all rights under such laws and treaties and does not, except as specifically stated in this paragraph, grant any license under its patents, copyrights, trademarks, or other intellectual property rights.  If the Software is not accompanied by a license agreement and you do not otherwise have a written agreement with Cypress governing the use of the Software, then Cypress hereby grants you a personal, non-exclusive, nontransferable license (without the right to sublicense) (1) under its copyright rights in the Software (a) for Software provided in source code form, to modify and reproduce the Software solely for use with Cypress hardware products, only internally within your organization, and (b) to distribute the Software in binary code form externally to end users (either directly or indirectly through resellers and distributors), solely for use on Cypress hardware product units, and (2) under those claims of Cypress’s patents that are infringed by the Software (as provided by Cypress, unmodified) to make, use, distribute, and import the Software solely for use with Cypress hardware products.  Any other use, reproduction, modification, translation, or compilation of the Software is prohibited.
-<br>
+© Cypress Semiconductor Corporation, 2020-2022. This document is the property of Cypress Semiconductor Corporation, an Infineon Technologies company, and its affiliates ("Cypress").  This document, including any software or firmware included or referenced in this document ("Software"), is owned by Cypress under the intellectual property laws and treaties of the United States and other countries worldwide.  Cypress reserves all rights under such laws and treaties and does not, except as specifically stated in this paragraph, grant any license under its patents, copyrights, trademarks, or other intellectual property rights.  If the Software is not accompanied by a license agreement and you do not otherwise have a written agreement with Cypress governing the use of the Software, then Cypress hereby grants you a personal, non-exclusive, nontransferable license (without the right to sublicense) (1) under its copyright rights in the Software (a) for Software provided in source code form, to modify and reproduce the Software solely for use with Cypress hardware products, only internally within your organization, and (b) to distribute the Software in binary code form externally to end users (either directly or indirectly through resellers and distributors), solely for use on Cypress hardware product units, and (2) under those claims of Cypress’s patents that are infringed by the Software (as provided by Cypress, unmodified) to make, use, distribute, and import the Software solely for use with Cypress hardware products.  Any other use, reproduction, modification, translation, or compilation of the Software is prohibited.
+<br />
 TO THE EXTENT PERMITTED BY APPLICABLE LAW, CYPRESS MAKES NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, WITH REGARD TO THIS DOCUMENT OR ANY SOFTWARE OR ACCOMPANYING HARDWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  No computing device can be absolutely secure.  Therefore, despite security measures implemented in Cypress hardware or software products, Cypress shall have no liability arising out of any security breach, such as unauthorized access to or use of a Cypress product. CYPRESS DOES NOT REPRESENT, WARRANT, OR GUARANTEE THAT CYPRESS PRODUCTS, OR SYSTEMS CREATED USING CYPRESS PRODUCTS, WILL BE FREE FROM CORRUPTION, ATTACK, VIRUSES, INTERFERENCE, HACKING, DATA LOSS OR THEFT, OR OTHER SECURITY INTRUSION (collectively, "Security Breach").  Cypress disclaims any liability relating to any Security Breach, and you shall and hereby do release Cypress from any claim, damage, or other liability arising from any Security Breach.  In addition, the products described in these materials may contain design defects or errors known as errata which may cause the product to deviate from published specifications. To the extent permitted by applicable law, Cypress reserves the right to make changes to this document without further notice. Cypress does not assume any liability arising out of the application or use of any product or circuit described in this document. Any information provided in this document, including any sample design information or programming code, is provided only for reference purposes.  It is the responsibility of the user of this document to properly design, program, and test the functionality and safety of any application made of this information and any resulting product.  "High-Risk Device" means any device or system whose failure could cause personal injury, death, or property damage.  Examples of High-Risk Devices are weapons, nuclear installations, surgical implants, and other medical devices.  "Critical Component" means any component of a High-Risk Device whose failure to perform can be reasonably expected to cause, directly or indirectly, the failure of the High-Risk Device, or to affect its safety or effectiveness.  Cypress is not liable, in whole or in part, and you shall and hereby do release Cypress from any claim, damage, or other liability arising from any use of a Cypress product as a Critical Component in a High-Risk Device. You shall indemnify and hold Cypress, including its affiliates, and its directors, officers, employees, agents, distributors, and assigns harmless from and against all claims, costs, damages, and expenses, arising out of any claim, including claims for product liability, personal injury or death, or property damage arising from any use of a Cypress product as a Critical Component in a High-Risk Device. Cypress products are not intended or authorized for use as a Critical Component in any High-Risk Device except to the limited extent that (i) Cypress’s published data sheet for the product explicitly states Cypress has qualified the product for use in a specific High-Risk Device, or (ii) Cypress has given you advance written authorization to use the product as a Critical Component in the specific High-Risk Device and you have signed a separate indemnification agreement.
-<br>
-Cypress, the Cypress logo, and combinations thereof, WICED, ModusToolbox, PSoC, CapSense, EZ-USB, F-RAM, and Traveo are trademarks or registered trademarks of Cypress or a subsidiary of Cypress in the United States or in other countries. For a more complete list of Cypress trademarks, visit cypress.com. Other names and brands may be claimed as property of their respective owners.
+<br />
+Cypress, the Cypress logo, and combinations thereof, WICED, ModusToolbox, PSoC, CapSense, EZ-USB, F-RAM, and Traveo are trademarks or registered trademarks of Cypress or a subsidiary of Cypress in the United States or in other countries. For a more complete list of Cypress trademarks, visit www.infineon.com. Other names and brands may be claimed as property of their respective owners.

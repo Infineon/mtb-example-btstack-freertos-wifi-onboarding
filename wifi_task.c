@@ -393,6 +393,9 @@ void scan_callback(cy_wcm_scan_result_t *result_ptr, void *user_data,
     uint8_t *scan_data;
     uint8_t byte_no = 0;
     uint8_t ssid_len = 0;
+    uint8_t security_len = 4;
+    /* Scan packet type length of SSID and security */
+    uint8_t scan_packet_type_len = 1;
 
     ssid_len = strlen((const char *)result_ptr->SSID);
 
@@ -407,7 +410,12 @@ void scan_callback(cy_wcm_scan_result_t *result_ptr, void *user_data,
         if(NOTIF_SCAN == *(uint32_t *) user_data)
         {
             /* Get memory for the buffer to send the scan data */
-            scan_data = (uint8_t *)wiced_bt_get_buffer(ssid_len + sizeof(uint32_t));
+            /* Length of SCAN_PACKET_TYPE_SSID + Length of ssid_len + ssid_len +
+             * Length of SCAN_PACKET_TYPE_SECURITY + Length of security_len + security_len
+             */
+            scan_data = (uint8_t *)wiced_bt_get_buffer(scan_packet_type_len +
+                            sizeof(ssid_len) + ssid_len + scan_packet_type_len
+                            + sizeof(security_len) + security_len);
             if(NULL == scan_data)
             {
                 printf("Buffer for notification not allocated\n");
@@ -421,7 +429,7 @@ void scan_callback(cy_wcm_scan_result_t *result_ptr, void *user_data,
 
             /* Fill in the 4 bytes of security value */
             scan_data[byte_no++] = SCAN_PACKET_TYPE_SECURITY;
-            scan_data[byte_no++] = sizeof(uint32_t);
+            scan_data[byte_no++] = security_len;
             scan_data[byte_no++] = (uint8_t)(result_ptr->security & 0x000000ff);
             scan_data[byte_no++] = (uint8_t)((result_ptr->security &
                                               0x0000ff00) >> 8);
@@ -454,4 +462,3 @@ void scan_callback(cy_wcm_scan_result_t *result_ptr, void *user_data,
 
 
 /* [] END OF FILE */
-

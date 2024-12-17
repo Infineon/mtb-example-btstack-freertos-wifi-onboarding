@@ -1,54 +1,59 @@
-# Wi-Fi Onboarding Using Bluetooth&reg; LE
+# Wi-Fi onboarding using Bluetooth&reg; LE
 
-This example uses the Arm&reg; Cortex&reg;-M4 (CM4) CPU of PSoC&trade; 6 MCU to communicate with the CYW43xxx combo devices and control the Wi-Fi and Bluetooth LE functionality. It uses Bluetooth LE on the combo device to help connect the Wi-Fi to the AP. It also enables low-power mode on Wi-Fi and Bluetooth LE.
+This example uses the Arm&reg; Cortex&reg;-M4 (CM4) CPU of PSOC&trade; 6 MCU to communicate with the AIROC&trade; CYW43xxx combo devices and control the Wi-Fi and Bluetooth&reg; LE functionality. It uses Bluetooth&reg; LE on the combo device to help connect the Wi-Fi to the AP. It also enables low-power mode on Wi-Fi and Bluetooth&reg; LE.
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-btstack-freertos-wifi-onboarding)
 
-[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzAyMjMiLCJTcGVjIE51bWJlciI6IjAwMi0zMDIyMyIsIkRvYyBUaXRsZSI6IldpLUZpIE9uYm9hcmRpbmcgVXNpbmcgQmx1ZXRvb3RoJnJlZzsgTEUiLCJyaWQiOiJzaGFoc2h1YmhhbXMiLCJEb2MgdmVyc2lvbiI6IjQuMy4wIiwiRG9jIExhbmd1YWdlIjoiRW5nbGlzaCIsIkRvYyBEaXZpc2lvbiI6Ik1DRCIsIkRvYyBCVSI6IklDVyIsIkRvYyBGYW1pbHkiOiJXSUZJIn0=)
+[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzAyMjMiLCJTcGVjIE51bWJlciI6IjAwMi0zMDIyMyIsIkRvYyBUaXRsZSI6IldpLUZpIG9uYm9hcmRpbmcgdXNpbmcgQmx1ZXRvb3RoJnJlZzsgTEUiLCJyaWQiOiJtaXNocmFhbWFsIiwiRG9jIHZlcnNpb24iOiI1LjAuMCIsIkRvYyBMYW5ndWFnZSI6IkVuZ2xpc2giLCJEb2MgRGl2aXNpb24iOiJNQ0QiLCJEb2MgQlUiOiJJQ1ciLCJEb2MgRmFtaWx5IjoiV0lGSSJ9)
+
 
 ## Requirements
 
-- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.1 or later (tested with v3.1)
+- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.2 or later (tested with v3.3)
 - Board support package (BSP) minimum required version: 4.0.0
 - Programming language: C
-- Associated parts: All [PSoC&trade; 6 MCU](https://www.infineon.com/cms/en/product/microcontroller/32-bit-psoc-arm-cortex-microcontroller/psoc-6-32-bit-arm-cortex-m4-mcu) parts, [AIROC&trade; CYW20819 Bluetooth&reg; & Bluetooth&reg; LE SoC](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-bluetooth-le-bluetooth-multiprotocol/airoc-bluetooth-le-bluetooth/cyw20819), [AIROC&trade; CYW43012 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw43012), [AIROC&trade; CYW4343W Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw4343w), [AIROC&trade; CYW4373 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-5-802.11ac/cyw4373), [AIROC&trade; CYW43439 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw43439), ,[AIROC&trade; CYW43022 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-5-802.11ac/cyw43022)
+- Associated parts: All [PSOC&trade; 6 MCU](https://www.infineon.com/cms/en/product/microcontroller/32-bit-psoc-arm-cortex-microcontroller/psoc-6-32-bit-arm-cortex-m4-mcu) parts, [AIROC&trade; CYW20819 Bluetooth&reg; & Bluetooth&reg; LE SoC](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-bluetooth-le-bluetooth-multiprotocol/airoc-bluetooth-le-bluetooth/cyw20819), [AIROC&trade; CYW43012 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw43012), [AIROC&trade; CYW4343W Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw4343w), [AIROC&trade; CYW4373 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-5-802.11ac/cyw4373), [AIROC&trade; CYW43439 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-4-802.11n/cyw43439), [AIROC&trade; CYW43022 Wi-Fi & Bluetooth&reg; combo chip](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-wi-fi-plus-bluetooth-combos/wi-fi-5-802.11ac/cyw43022)
 
 
 ## Supported toolchains (make variable 'TOOLCHAIN')
 
 - GNU Arm&reg; Embedded Compiler v11.3.1 (`GCC_ARM`) – Default value of `TOOLCHAIN`
-- Arm&reg; Compiler v6.16 (`ARM`)
-- IAR C/C++ Compiler v9.30.1 (`IAR`)
+- Arm&reg; Compiler v6.22 (`ARM`)
+- IAR C/C++ Compiler v9.50.2 (`IAR`)
 
 
-## Supported kits
+## Supported kits (make variable 'TARGET')
 
-- [PSoC&trade; 62S2 Wi-Fi Bluetooth&reg; Pioneer Kit](https://www.infineon.com/CY8CKIT-062S2-43012) (`CY8CKIT-062S2-43012`) – Default value of `TARGET`
-- Rapid IoT Connect Developer kit (`CYSBSYSKIT-DEV-01`)
-- [PSoC&trade; 6 Wi-Fi Bluetooth&reg; Pioneer Kit](https://www.infineon.com/CY8CKIT-062-WIFI-BT) (`CY8CKIT-062-WIFI-BT`)
-- [PSoC&trade; 62S1 Wi-Fi Bluetooth&reg; Pioneer Kit](https://www.infineon.com/CYW9P62S1-43438EVB-01) (`CYW9P62S1-43438EVB-01`)
-- [PSoC&trade; 62S1 Wi-Fi Bluetooth&reg; Pioneer Kit](https://www.infineon.com/CYW9P62S1-43012EVB-01) (`CYW9P62S1-43012EVB-01`)
-- [PSoC&trade; 6 Evaluation Kit](https://www.infineon.com/CY8CEVAL-062S2) (`CY8CEVAL-062S2-LAI-4373M2`,`CY8CEVAL-062S2-CYW43022CUB`,`CY8CEVAL-062S2-CYW955513SDM2WLIPA`)
+- [PSOC&trade; 62S2 Wi-Fi Bluetooth&reg; Pioneer Kit](https://www.infineon.com/CY8CKIT-062S2-43012) (`CY8CKIT-062S2-43012`) – Default value of `TARGET`
+- [PSOC&trade; 6 Wi-Fi Bluetooth&reg; Pioneer Kit](https://www.infineon.com/CY8CKIT-062-WIFI-BT) (`CY8CKIT-062-WIFI-BT`)
+- [PSOC&trade; 62S1 Wi-Fi Bluetooth&reg; Pioneer Kit](https://www.infineon.com/CYW9P62S1-43438EVB-01) (`CYW9P62S1-43438EVB-01`)
+- [PSOC&trade; 62S1 Wi-Fi Bluetooth&reg; Pioneer Kit](https://www.infineon.com/CYW9P62S1-43012EVB-01) (`CYW9P62S1-43012EVB-01`)
+- [PSOC&trade; 6 Evaluation Kit](https://www.infineon.com/CY8CEVAL-062S2) (`CY8CEVAL-062S2-LAI-4373M2`, `CY8CEVAL-062S2-CYW43022CUB`, `CY8CEVAL-062S2-CYW955513SDM2WLIPA`)
+
 
 ## Hardware setup
 
 This example uses the board's default configuration. See the kit user guide to ensure that the board is configured correctly.
 
-> **Note:** The PSoC&trade; 6 Bluetooth&reg; LE Pioneer Kit (CY8CKIT-062-BLE) and the PSoC&trade; 6 Wi-Fi Bluetooth&reg; Pioneer Kit (CY8CKIT-062-WIFI-BT) ship with KitProg2 installed. ModusToolbox&trade; requires KitProg3. Before using this code example, make sure that the board is upgraded to KitProg3. The tool and instructions are available in the [Firmware Loader](https://github.com/Infineon/Firmware-loader) GitHub repository. If you do not upgrade, you will see an error like "unable to find CMSIS-DAP device" or "KitProg firmware is out of date".
+> **Note:** The PSOC&trade; 6 Bluetooth&reg; LE Pioneer Kit (CY8CKIT-062-BLE) and the PSOC&trade; 6 Wi-Fi Bluetooth&reg; Pioneer Kit (CY8CKIT-062-WIFI-BT) ship with KitProg2 installed. ModusToolbox&trade; requires KitProg3. Before using this code example, make sure that the board is upgraded to KitProg3. The tool and instructions are available in the [Firmware Loader](https://github.com/Infineon/Firmware-loader) GitHub repository. If you do not upgrade, you will see an error like "unable to find CMSIS-DAP device" or "KitProg firmware is out of date".
+
 
 ## Software setup
 
-**Note:** This code example consists of two parts: a Bluetooth LE GAP Peripheral and a Bluetooth LE GAP Central.
+See the [ModusToolbox&trade; tools package installation guide](https://www.infineon.com/ModusToolboxInstallguide) for information about installing and configuring the tools package.
 
-For the Bluetooth LE GAP Central, download and install the AIROC&trade; Bluetooth&reg; Connect App for [Android](https://play.google.com/store/apps/details?id=com.infineon.airocbluetoothconnect).
+> **Note:** This code example consists of two parts: a Bluetooth&reg; LE GAP Peripheral and a Bluetooth&reg; LE GAP Central.
 
-Scan the following QR code from your mobile phone to download the AIROC&trade; Bluetooth&reg; Connect mobile app.
+For the Bluetooth&reg; LE GAP Central, download and install the AIROC&trade; Bluetooth&reg; Connect App for [iOS](https://apps.apple.com/in/app/airoc-bluetooth-connect-app/id6443702288) or [Android](https://play.google.com/store/apps/details?id=com.infineon.airocbluetoothconnect).
 
-![AppQR](images/qr.png)
+Scan the required QR code from your mobile phone to download the AIROC&trade; Bluetooth&reg; Connect App.
 
-**Note:** AIROC&trade; Bluetooth&reg; Connect App for iOS is coming soon on App Store. If you are using an iPhone, optionally you can download and install Lightblue app.
+**Figure 1. QR code for AIROC&trade; Bluetooth&reg; Connect App**
 
-Install a terminal emulator if you don't have one. instructions in this document use [Tera Term](https://teratermproject.github.io/index-en.html). all other required software come bundled with the Eclipse IDE for ModusToolbox&trade;.
+![](images/qr.png)
+
+Install a terminal emulator if you don't have one. Instructions in this document use [Tera Term](https://teratermproject.github.io/index-en.html).
+
 
 ## Using the code example
 
@@ -73,7 +78,7 @@ The ModusToolbox&trade; tools package provides the Project Creator as both a GUI
 
    > **Note:** Depending on how you open the Project Creator tool, these fields may be pre-selected for you.
 
-   b.	Select this code example from the list by enabling its check box.
+   b. Select this code example from the list by enabling its check box.
 
    > **Note:** You can narrow the list of displayed examples by typing in the filter box.
 
@@ -83,16 +88,17 @@ The ModusToolbox&trade; tools package provides the Project Creator as both a GUI
 
 </details>
 
+
 <details><summary><b>Use Project Creator CLI</b></summary>
 
 The 'project-creator-cli' tool can be used to create applications from a CLI terminal or from within batch files or shell scripts. This tool is available in the *{ModusToolbox&trade; install directory}/tools_{version}/project-creator/* directory.
 
 Use a CLI terminal to invoke the 'project-creator-cli' tool. On Windows, use the command-line 'modus-shell' program provided in the ModusToolbox&trade; installation instead of a standard Windows command-line application. This shell provides access to all ModusToolbox&trade; tools. You can access it by typing "modus-shell" in the search box in the Windows menu. In Linux and macOS, you can use any terminal application.
 
-The following example clones the "[LE Find me](https://github.com/Infineon/mtb-example-btstack-freertos-wifi-onboarding)" application with the desired name "WiFiOnboarding" configured for the *CY8CKIT-062-WIFI-BT* BSP into the specified working directory, *C:/mtb_projects*:
+The following example clones the "[Wi-Fi onboarding using Bluetooth&reg; LE](https://github.com/Infineon/mtb-example-btstack-freertos-wifi-onboarding)" application with the desired name "WiFiOnboarding" configured for the *CY8CKIT-062S2-43012* BSP into the specified working directory, *C:/mtb_projects*:
 
    ```
-   project-creator-cli --board-id CY8CKIT-062-WIFI-BT --app-id mtb-example-btstack-freertos-wifi-onboarding --user-app-name WiFiOnboarding Using Bluetooth&reg; LE--target-dir "C:/mtb_projects"
+   project-creator-cli --board-id CY8CKIT-062S2-43012 --app-id mtb-example-btstack-freertos-wifi-onboarding --user-app-name WiFiOnboarding --target-dir "C:/mtb_projects"
    ```
 
 The 'project-creator-cli' tool has the following arguments:
@@ -103,6 +109,8 @@ Argument | Description | Required/optional
 `--app-id`   | Defined in the <id> field of the [CE](https://github.com/Infineon?q=ce-manifest&type=&language=&sort=) manifest | Required
 `--target-dir`| Specify the directory in which the application is to be created if you prefer not to use the default current working directory | Optional
 `--user-app-name`| Specify the name of the application if you prefer to have a name other than the example's default name | Optional
+
+<br>
 
 > **Note:** The project-creator-cli tool uses the `git clone` and `make getlibs` commands to fetch the repository and import the required libraries. For details, see the "Project creator tools" section of the [ModusToolbox&trade; tools package user guide](https://www.infineon.com/ModusToolboxUserGuide) (locally available at {ModusToolbox&trade; install directory}/docs_{version}/mtb_user_guide.pdf).
 
@@ -152,7 +160,7 @@ For more details, see the [IAR Embedded Workbench for ModusToolbox&trade; user g
 
 <details><summary><b>Command line</b></summary>
 
-If you prefer to use the CLI, open the appropriate terminal, and navigate to the project directory. On Windows, use the command line 'modus-shell' program; on Linux and macOS, you can use any terminal application. From there, you can run various `make` commands.
+If you prefer to use the CLI, open the appropriate terminal, and navigate to the project directory. On Windows, use the command-line 'modus-shell' program; on Linux and macOS, you can use any terminal application. From there, you can run various `make` commands.
 
 For more details, see the [ModusToolbox&trade; tools package user guide](https://www.infineon.com/ModusToolboxUserGuide) (locally available at *{ModusToolbox&trade; install directory}/docs_{version}/mtb_user_guide.pdf*).
 
@@ -161,15 +169,13 @@ For more details, see the [ModusToolbox&trade; tools package user guide](https:/
 
 ## Operation
 
-If using a PSoC&trade; 64 "Secure" MCU kit (like CY8CKIT-064B0S2-4343W), the PSoC&trade; 64 device must be provisioned with keys and policies before being programmed. Follow the instructions in the ["Secure Boot" SDK user guide](https://www.infineon.com/dgdlac/Infineon-PSoC_64_Secure_MCU_Secure_Boot_SDK_User_Guide-Software-v07_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0f8c361a7666) to provision the device. If the kit is already provisioned, copy-paste the keys and policy folder to the application folder.
-
 1. Connect the board to your PC using the provided USB cable through the KitProg3 USB connector.
 
 2. Open a terminal program and select the KitProg3 COM port. Set the serial port parameters to 8N1 and 115200 baud.
 
 3. Program the board using one of the following:
 
-   <details><summary><b>Using Eclipse IDE for ModusToolbox&trade;</b></summary>
+   <details><summary><b>Using Eclipse IDE</b></summary>
 
       1. Select the application project in the Project Explorer.
 
@@ -196,57 +202,58 @@ If using a PSoC&trade; 64 "Secure" MCU kit (like CY8CKIT-064B0S2-4343W), the PSo
       ```
    </details>
 
-      After programming, the application starts automatically. Observe the messages on the UART terminal, and wait for the device to initialize BT stack and Wi-Fi.
+   After programming, the application starts automatically. Observe the messages on the UART terminal and wait for the device to initialize BTSTACK and Wi-Fi.
 
-      The device initializes the BT stack and starts advertisement.
+   The device initializes the BTSTACK and starts advertisement.
 
-     **Figure 1. Boot-up Log**
-     ![Figure 1](./images/figure-1.png)
+   **Figure 2. Boot-up Log**
+     
+   ![](./images/figure-1.png)
 
-5. Do the following to test using the AIROC&trade; Bluetooth&reg; Connect mobile app:
+4. Do the following to test using the AIROC&trade; Bluetooth&reg; Connect App:
 
-    1. Turn ON Bluetooth on your Android or iOS device.
+   1. Turn ON Bluetooth&reg; on your Android or iOS device.
 
-    2. Launch the AIROC&trade; Bluetooth&reg; Connect app.
+   2. Launch the AIROC&trade; Bluetooth&reg; Connect App.
 
-    3. Press the reset switch on the kit to start sending advertisements.
+   3. Press the reset switch on the kit to start sending advertisements.
 
-    4. Swipe down on the AIROC&trade; Bluetooth&reg; Connect app home screen to start scanning for Bluetooth LE Peripherals. Your device (“bleProv”) appears in the AIROC&trade; Bluetooth&reg; Connect app home screen. Select your device to establish a Bluetooth LE connection.
+   4. Swipe down on the AIROC&trade; Bluetooth&reg; Connect App home screen to start scanning for Bluetooth&reg; LE Peripherals. Your device (“bleProv”) appears in the AIROC&trade; Bluetooth&reg; Connect App home screen. Select your device to establish a Bluetooth&reg; LE connection.
 
-    5. Select the **GATT DB** Profile from the carousel view then select **Unknown Service**.
+   5. Select the **GATT DB** Profile from the carousel view and then select **Unknown Service**.
 
-    6. To scan for the availabe Wi-Fi networks, enable the notifications in the characteristic with UUID ending in **66**, then select the characteristic with UUID ending in **67** and Select **Notify**. Write hex value 2 to this characterisitc. The device will start scanning and send the network details as notifications in the characteristic with UUID ending in 66. The data is in the Type, Length, Value (TLV) format. The first byte gives the type which is **1** for SSID and **2** for security details. The next byte gives the length of the data. After this data there will be another type byte followed by length and data. The security value consists of 4 bytes (little-endian) which needs to be combined into a 32-bit value.
+   6. To scan for the available Wi-Fi networks, enable the notifications in the characteristic with UUID ending in **66**, then select the characteristic with UUID ending in **67** and select **Notify**. Write the hex value 2 to this characteristic. The device will start scanning and send the network details as notifications in the characteristic with UUID ending in **66**. The data is in the Type, Length, Value (TLV) format. The first byte gives the type which is **1** for SSID and **2** for security details. The next byte gives the length of the data. After this data there will be another type byte followed by length and data. The security value consists of 4 bytes (little-endian) which needs to be combined into a 32-bit value.
 
-       **Note:** If the notifications are not enabled in the characteristic with UUID ending in 66 the scan will not be started as there is no way to report available networks to the user. The user can still connect to a network by entering WIFI SSID (in UUID ending with 63), Password (in UUID ending with 64) and then initiating the connect request by writing '1' in WIFI control chanracteristic (in UUID ending with 67).
+      > **Note:** If the notifications are not enabled in the characteristic with UUID ending in 66 the scan will not be started as there is no way to report available networks. You can still connect to a network by entering Wi-Fi SSID (in UUID ending with 63), Password (in UUID ending with 64), and then initiating the connect request by writing '1' in WIFI control characteristic (in UUID ending with 67).
 
-    7. To connect to the Wi-Fi network you need to send SSID and password data to the client device. You can select one of the networks which was discovered during scan or you can give another set of details. If the given network is not available then the device will store the values and try to connect on next restart. Note that the data is stored in non-volatile storage only when the connect command is sent. There are two ways to send the WiFi credentials. Either send the WiFi SSID and password separately or together.
+   7. To connect to the Wi-Fi network, you need to send SSID and password data to the client device. You can select one of the networks which was discovered during scan or you can give another set of details. If the given network is not available, then the device will store the values and try to connect on next restart. Note that the data is stored in non-volatile storage only when the connect command is sent. There are two ways to send the Wi-Fi credentials. Either send the Wi-Fi SSID and password separately or together.
 
-       1. Send SSID and password separately
-           1. Select the UUID ending in 63. Write your Wi-Fi SSID in hex or ASCII format.
-           2. Select the UUID ending in 64. Write your Wi-Fi password in hex or ASCII format.
-       2. Send the SSID and password together
-           1. Format the SSID and password data in TLV format. For SSID the type value is 1 and for password the type value is 2. The first byte of the data should be type and for this example it will be 1 for SSID followed by length of the SSID and then the SSID data which is in hex format. This is followed by TLV value for password. For e.g if the SSID is WIFISSID and password is PASSWORD then the formatted value will be:
+      1. Send SSID and password separately.
+         1. Select the UUID ending in 63. Write your Wi-Fi SSID in hex or ASCII format.
+         2. Select the UUID ending in 64. Write your Wi-Fi password in hex or ASCII format.
+      2. Send the SSID and password together.
+         1. Format the SSID and password data in TLV format. For SSID the type value is '1' and for password the type value is '2'. The first byte of the data should be type and for this example it will be '1' for SSID followed by length of the SSID and then the SSID data which is in hex format. This is followed by TLV value for password. For example, if the SSID is WIFISSID and password is PASSWORD, then the formatted value will be:
+            ```
+            01 08 57 49 46 49 53 53 49 44 02 08 50 41 53 53 57 4f 52 44
+            ```
+         2. Select the UUID ending in 65. Write your formatted data.
 
-           ```
-           01 08 57 49 46 49 53 53 49 44 02 08 50 41 53 53 57 4f 52 44
-           ```
-           2. Select the UUID ending in 65. Write your formatted data
+   8. If you are sending SSID and password separately, then it is easier to input the data directly in the ASCII format. If you are sending them together, then you have to use the hex format as the type and length values are in hex format.
 
-    8. If you are sending SSID and password separately then it is easier to input the data directly in the ASCII format. If you are sending them together then you have to use the hex format as the type and length values are in hex format.
+      > **Note:** You can use an online tool for converting the SSID and password from string to hex but be careful about where you type in your password.
 
-       **Note:** You can use an online tool for converting the SSID and password from string to hex but be careful about where you type in your password.
-
-       **Figure 2. AIROC&trade; Bluetooth&reg; Connect App Flow**
+      **Figure 3. AIROC&trade; Bluetooth&reg; Connect App flow**
        
-      ![Figure 2](./images/figure-2.png)
+      ![](./images/figure-2.png)
 
-    9. Select the attribute with the UUID ending in **67**. Select **Notify** (if not already done earlier). Write hex value 1 to this characteristic to connect to the WiFi network. If the connection is successful then the server will send a notification with value 1 otherwise with value 0.
+   9. Select the attribute with the UUID ending in **67**. Select **Notify** (if not already done earlier). Write the hex value '1' to this characteristic to connect to the Wi-Fi network. If the connection is successful, then the server will send a notification with value '1' otherwise, with value '0'.
 
-       **Figure 3. Connection Log**
+      **Figure 4. Connection Log**
 
-      ![Figure 3](./images/figure-3.png)
+      ![](./images/figure-3.png)
 
-6. Once the Wi-Fi SSID and password is provided by the client it is stored in the EEPROM. To delete this data the user needs to press User Button.
+5. Once the Wi-Fi SSID and password is provided by the client, it is stored in the EEPROM. To delete this data, you need to press the user button.
+
 
 ## Debugging
 
@@ -257,8 +264,6 @@ You can debug the example to step through the code.
 
 Use the **\<Application Name> Debug (KitProg3_MiniProg4)** configuration in the **Quick Panel**. For details, see the "Program and debug" section in the [Eclipse IDE for ModusToolbox&trade; user guide](https://www.infineon.com/MTBEclipseIDEUserGuide).
 
-<mark> Add the below Note for relevant CEs only, like PSoC 6 MCU based. Remove this note for others.
-
 > **Note:** **(Only while debugging)** On the CM4 CPU, some code in `main()` may execute before the debugger halts at the beginning of `main()`. This means that some code executes twice – once before the debugger stops execution, and again after the debugger resets the program counter to the beginning of `main()`. See [KBA231071](https://community.infineon.com/docs/DOC-21143) to learn about this and for the workaround.
 
 </details>
@@ -267,117 +272,106 @@ Use the **\<Application Name> Debug (KitProg3_MiniProg4)** configuration in the 
 <details><summary><b>In other IDEs</b></summary>
 
 Follow the instructions in your preferred IDE.
+
 </details>
+
+
 ## Design and implementation
 
-### Introduction
+In this example, Bluetooth&reg; LE provides a mechanism for the device to connect to a Wi-Fi AP by providing the Wi-Fi SSID and password in a secure manner. The Wi-Fi credentials are stored in EEPROM so that the device can use this data upon reset to connect to an AP without requiring Bluetooth&reg; LE intervention. Note that the data stored in the EEPROM is unencrypted.
 
-In this example, Bluetooth LE provides a mechanism for the device to connect to a Wi-Fi AP by providing the Wi-Fi SSID and password in a secure manner. The Wi-Fi credentials are stored in EEPROM so that the device can use this data upon reset to connect to an AP without requiring Bluetooth LE intervention. Note that the data stored in the EEPROM is unencrypted
+The Wi-Fi SSID and password are exchanged using custom GATT service and characteristics. There are three characteristics to send SSID and password. The first two are used to send the SSID and password separately and the third is used to send the data together as described previously. The fourth characteristic is to receive Wi-Fi network details when the device is asked to scan for networks. There is a fifth custom characteristic, which gives the command to connect, disconnect, and scan. Only the Wi-Fi SSID characteristic is readable; all others are either writable or notifiable or both. The device needs to be paired before any characteristic can be read from or written to.
 
-The Wi-Fi SSID and password are exchanged using custom GATT service and characteristics. There are three characteristics to send SSID and password. The first two are used to send the SSID and password separately and the third is used to send the data together as described previously. The fourth characteristic is to receive WIFi netowrk details when the device is asked to scan for networks. There is a fifth custom characteristic, which gives the command to connect, disconnect and scan. Only the Wi-Fi SSID characteristic is readable; All others are either writable or notifiable or both. The device needs to be paired before any characteristic can be read from or written to.
+**Table 1. Application source files**
 
-**Table 1. Application Source Files**
-
-|**File Name**            |**Comments**      |
-| ------------------------|---------------------------------------|
-| *main.c* | Has the application entry function. It initializes the UART for debugging and then initializes the controller stack. It handles Bluetooth LE initialization, configuration, advertisement, and responses to Bluetooth LE events.|
-| *wifi_task.c* | It contains the wifi_task which helps to connect/disconnect to/from the Wi-Fi AP based on the Wi-Fi SSID and password provided.|
-| *app_utils.c* | Has some utility functions which help to convert return and status values to meaningful text|
+**File name**            |**Comments**
+------------------------|---------------------------------------
+*main.c* | It has the application entry function. It initializes the UART for debugging and then initializes the controller stack. It handles Bluetooth&reg; LE initialization, configuration, advertisement, and responses to Bluetooth&reg; LE events.
+*wifi_task.c* | It contains the wifi_task, which helps to connect/disconnect to/from the Wi-Fi AP based on the Wi-Fi SSID and password provided.
+*app_utils.c* | It has some utility functions which help to convert return and status values to meaningful text.
 
 **Table 2. Functions in *main.c***
 
-| **Function Name** | **Functionality** |
-|-------------------|-------------------|
-| `main` | This is the main function for the CM4 CPU. It does the following:
-| |1. Initializes the BSP  
-| |2. Enables global interrupt
-| |3. Initializes retarget IO
-| |4. Initializes platform configuration 
-| |5. Creates Wi-Fi connect and disconnect tasks 
-| |6. Starts the scheduler |
-| `application_init` |This function is called from the BTM enabled event, and does the following:  
-| |1. Creates a WICED heap
-| |2. Initializes button GPIO, enable interrupt and register callback
-| |3. Checks if Wi-Fi credentials data is available in the EEPROM
-| |4. Initializes and registers the GATT DB 
-| |5. Sets pairable mode to `TRUE` 
-| |6. Sets ADV data and starts advertising |
-| `app_management_cback` | Handles BT stack events |
-| `app_get_attribute` | Searches through the GATT DB to point to the attribute corresponding to the given handle |
-| `app_gatts_req_read_handler` | Handles GATT read request events from the stack |
-| `app_gatt_read_by_type_handler` | Handles GATT read by type requests |
-| `app_gatts_req_write_handler` | Handles GATT write request events from the stack |
-| `app_gatt_connect_callback` | Handles GATT connect request events from the stack |
-| `app_gatts_req_cb` | Redirects GATT attribute requests to the appropriate functions |
-| `app_gatts_callback` | This is the callback function for GATT events that was registered when the GATT database was initialized in the BTM enabled event.|
-| `gpio_interrupt_handler` | GPIO interrupt service routine. This function detects button presses, deletes the Wi-Fi data from the EEPROM, and starts Bluetooth LE ADV. |
+**Function name** | **Functionality**
+-------------------|-------------------
+`main` | This is the main function for the CM4 CPU. It does the following: <br> 1. Initializes the BSP <br> 2. Enables global interrupt <br> 3. Initializes retarget I/O <br> 4. Initializes platform configuration <br> 5. Creates Wi-Fi connect and disconnect tasks <br> 6. Starts the scheduler
+`application_init` | This function is called from the BTM enabled event and does the following: <br> 1. Creates a WICED heap <br> 2. Initializes button GPIO, enable interrupt, and register callback <br> 3. Checks if Wi-Fi credentials data is available in the EEPROM <br> 4. Initializes and registers the GATT DB <br> 5. Sets pairable mode to `TRUE` <br> 6. Sets ADV data and starts advertising
+`app_management_cback` | Handles BTSTACK events
+`app_get_attribute` | Searches through the GATT DB to point to the attribute corresponding to the given handle
+`app_gatts_req_read_handler` | Handles GATT read request events from the stack
+`app_gatt_read_by_type_handler` | Handles GATT read by type requests
+`app_gatts_req_write_handler` | Handles GATT write request events from the stack
+`app_gatt_connect_callback` | Handles GATT connect request events from the stack
+`app_gatts_req_cb` | Redirects GATT attribute requests to the appropriate functions
+`app_gatts_callback` | This is the callback function for GATT events that was registered when the GATT database was initialized in the BTM enabled event.
+`gpio_interrupt_handler` | GPIO interrupt service routine. This function detects button presses, deletes the Wi-Fi data from the EEPROM, and starts Bluetooth&reg; LE ADV.
 
 **Table 3. Functions in *wifi_task.c***
 
-| **Function Name** | **Functionality** |
-|-------------------|-------------------|
-| `wifi_task` | Initializes the WCM module and connects disconnects to/from the AP as well as starts Wi-Fi scan |
-| `scan_callback` | The callback function which accumulates the scan results |
+**Function name** | **Functionality**
+-------------------|-------------------
+`wifi_task` | Initializes the WCM module and connects/disconnects to/from the AP as well as starts Wi-Fi scan
+`scan_callback` | The callback function which accumulates the scan results
 
 
-### Bluetooth LE GATT Custom Service
-This example uses custom GATT service and characteristics to communicate with the Bluetooth LE GATT client. The GATT database was created using the Bluetooth Configurator. The configurator generates files called cycfg_gatt_db.c and cycfg_gatt_db.h which contain the GATT DB. See the {ModusToolbox install directory}/tools_{version}/bt-configurator/docs/bt-configurator.pdf to learn to create a GATT database.
+### Bluetooth&reg; LE GATT custom service
 
-The custom characteristics used in this example is detailed in the specification called "Infineon Wi-Fi onboarding service (IWOS)" (file name: 002-33722_00_V.pdf included with this code example)
+This example uses custom GATT service and characteristics to communicate with the Bluetooth&reg; LE GATT client. The GATT database was created using the Bluetooth&reg; Configurator. The configurator generates files *cycfg_gatt_db.c* and *cycfg_gatt_db.h*, which contain the GATT DB. See the {ModusToolbox install directory}/tools_{version}/bt-configurator/docs/bt-configurator.pdf to learn to create a GATT database.
 
-### Low Power
-To enable Low Power in your design you can refer to the Cypress **Low Power Assistant Middleware Library Guide** located in *<application_folder>/libs/lpa/docs/lpa_api_reference_manual/html/index.html*. Refer to the **Part 2** and **Part 3** of this guide for Wi-Fi and Bluetooth low power respectively.
+The custom characteristics used in this example is detailed in the specification called "Infineon Wi-Fi onboarding service (IWOS)" (file name: *002-33722_0A_S.pdf* included with this code example).
+
+
+### Low-power
+
+To enable low-power in your design, see the **Low Power Assistant Middleware Library Guide** located in *<working_directory>/mtb_shared/lpa/<release-vX.Y.Z>/docs/lpa_api_reference_manual/html/index.html*. See the **Part 2** and **Part 3** of this guide for Wi-Fi and Bluetooth&reg; low-power respectively.
 
 ### Resources and settings
-This section explains the ModusToolbox resources and their configuration as used in this code example. Note that all the configuration explained in this section has already been done in the code example. The ModusToolbox IDE stores the configuration settings of the application in the *design.modus* file. This file is used by the graphical configurators, which generate the configuration firmware. This firmware is stored in the application’s *GeneratedSource* folder.
 
-- **Device Configurator:** The Device Configurator is used to enable/configure the peripherals and the pins used in the application. See the
-[Device Configurator Guide](https://www.infineon.com/dgdl/Infineon-ModusToolbox_Device_Configurator_Guide_4-UserManual-v01_00-EN.pdf?fileId=8ac78c8c7d718a49017d99ab297631cb&utm_source=cypress&utm_medium=referral&utm_campaign=202110_globe_en_all_integration-files).
+This section explains the ModusToolbox&trade; resources and their configuration as used in this code example. Note that all the configuration explained in this section has already been done in the code example. The ModusToolbox IDE stores the configuration settings of the application in the *design.modus* file. This file is used by the graphical configurators, which generate the configuration firmware. This firmware is stored in the application’s *GeneratedSource* folder.
 
-- **Bluetooth Configurator:** The Bluetooth Configurator is used for generating/modifying the Bluetooth LE GATT database. See the
-[Bluetooth Configurator Guide](https://www.infineon.com/dgdl/Infineon-ModusToolbox_Bluetooth_Configurator_Guide_3-UserManual-v01_00-EN.pdf?fileId=8ac78c8c7d718a49017d99aaf5b231be&utm_source=cypress&utm_medium=referral&utm_campaign=202110_globe_en_all_integration-files).
+- **Device Configurator:** The Device Configurator is used to enable/configure the peripherals and the pins used in the application. See the [Device configurator guide](https://www.infineon.com/ModusToolboxDeviceConfig).
+
+- **Bluetooth&reg; Configurator:** The Bluetooth&reg; Configurator is used for generating/modifying the Bluetooth&reg; LE GATT database. See the [Bluetooth&reg; configurator guide](https://www.infineon.com/ModusToolboxBLEConfig).
+
 
 ## Related resources
 
-
 Resources  | Links
 -----------|----------------------------------
-Application notes  | [AN228571](https://www.infineon.com/AN228571) – Getting started with PSoC&trade; 6 MCU on ModusToolbox&trade; <br>  [AN215656](https://www.infineon.com/AN215656) – PSoC&trade; 6 MCU: Dual-CPU system design <br> [AN79953](https://www.infineon.com/AN79953) – Getting started with PSoC&trade; 4 <br>  [AN85951](https://www.infineon.com/AN85951) – PSoC&trade; 4 and PSoC&trade; 6 MCU CAPSENSE&trade; design guide
+Application notes  | [AN228571](https://www.infineon.com/AN228571) – Getting started with PSOC&trade; 6 MCU on ModusToolbox&trade; <br> [AN215656](https://www.infineon.com/AN215656) – PSOC&trade; 6 MCU: Dual-CPU system design
 Code examples  | [Using ModusToolbox&trade;](https://github.com/Infineon/Code-Examples-for-ModusToolbox-Software) on GitHub
-Device documentation | [PSoC&trade; 6 MCU datasheets](https://documentation.infineon.com/html/psoc6/bnm1651211483724.html) <br> [PSoC&trade; 6 technical reference manuals](https://documentation.infineon.com/html/psoc6/zrs1651212645947.html)<br> [PSoC&trade; 4 datasheets](https://www.infineon.com/cms/en/search.html?intc=searchkwr-return#!view=downloads&term=psoc%204&doc_group=Data%20Sheet) <br>[PSoC&trade; 4 technical reference manuals](https://www.infineon.com/cms/en/search.html#!term=psoc%204%20technical%20reference%20manual&view=all)
+Device documentation | [PSOC&trade; 6 MCU datasheets](https://documentation.infineon.com/html/psoc6/bnm1651211483724.html) <br> [PSOC&trade; 6 technical reference manuals](https://documentation.infineon.com/html/psoc6/zrs1651212645947.html)
 Development kits | Select your kits from the [Evaluation board finder](https://www.infineon.com/cms/en/design-support/finder-selection-tools/product-finder/evaluation-board).
-Libraries on GitHub  | [mtb-pdl-cat1](https://github.com/Infineon/mtb-pdl-cat1) – PSoC&trade; 6 Peripheral Driver Library (PDL)  <br> [mtb-hal-cat1](https://github.com/Infineon/mtb-hal-cat1) – Hardware Abstraction Layer (HAL) library <br> [retarget-io](https://github.com/Infineon/retarget-io) – Utility library to retarget STDIO messages to a UART port <br>  [mtb-pdl-cat2](https://github.com/Infineon/mtb-pdl-cat2) – PSoC&trade; 4 Peripheral Driver Library (PDL) <br>  [mtb-hal-cat2](https://github.com/Infineon/mtb-hal-cat2) – Hardware Abstraction Layer (HAL) library
-Middleware on GitHub  | [capsense](https://github.com/Infineon/capsense) – CAPSENSE&trade; library and documents <br> [psoc6-middleware](https://github.com/Infineon/modustoolbox-software#psoc-6-middleware-libraries) – Links to all PSoC&trade; 6 MCU middleware
-Tools  | [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) – ModusToolbox&trade; is a collection of easy-to-use libraries and tools enabling rapid development with Infineon MCUs for applications ranging from wireless and cloud-connected systems, edge AI/ML, embedded sense and control, to wired USB connectivity using PSoC&trade; Industrial/IoT MCUs, AIROC&trade; Wi-Fi and Bluetooth&reg; connectivity devices, XMC&trade; Industrial MCUs, and EZ-USB&trade;/EZ-PD&trade; wired connectivity controllers. ModusToolbox&trade; incorporates a comprehensive set of BSPs, HAL, libraries, configuration tools, and provides support for industry-standard IDEs to fast-track your embedded application development.
+Libraries on GitHub  | [mtb-pdl-cat1](https://github.com/Infineon/mtb-pdl-cat1) – PSOC&trade; 6 Peripheral Driver Library (PDL)  <br> [mtb-hal-cat1](https://github.com/Infineon/mtb-hal-cat1) – Hardware Abstraction Layer (HAL) Library <br> [retarget-io](https://github.com/Infineon/retarget-io) – Utility library to retarget STDIO messages to a UART port
+Middleware on GitHub  | [psoc6-middleware](https://github.com/Infineon/modustoolbox-software#psoc-6-middleware-libraries) – Links to all PSOC&trade; 6 MCU middleware
+Tools  | [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) – ModusToolbox&trade; software is a collection of easy-to-use libraries and tools enabling rapid development with Infineon MCUs for applications ranging from wireless and cloud-connected systems, edge AI/ML, embedded sense and control, to wired USB connectivity using PSOC&trade; Industrial/IoT MCUs, AIROC&trade; Wi-Fi and Bluetooth&reg; connectivity devices, XMC&trade; Industrial MCUs, and EZ-USB&trade;/EZ-PD&trade; wired connectivity controllers. ModusToolbox&trade; incorporates a comprehensive set of BSPs, HAL, libraries, configuration tools, and provides support for industry-standard IDEs to fast-track your embedded application development.
 
 <br>
 
+
 ## Other resources
 
-
 Infineon provides a wealth of data at [www.infineon.com](https://www.infineon.com) to help you select the right device, and quickly and effectively integrate it into your design.
-
-For PSoC&trade; 6 MCU devices, see [How to design with PSoC&trade; 6 MCU - KBA223067](https://community.infineon.com/docs/DOC-14644) in the Infineon Developer community.
 
 
 ## Document history
 
-Document title: *CE230223* - *Wi-Fi Onboarding Using Bluetooth&reg; LE*
+Document title: *CE230223* - *Wi-Fi onboarding using Bluetooth&reg; LE*
 
-| Version | Description of Change |
-| ------- | --------------------- |
-| 1.0.0   | New code example      |
-| 2.0.0   | Major update to support ModusToolbox software v2.2<br> This version is not backward compatible with ModusToolbox software v2.1  |
-| 2.1.0   | Added support for CYSBSYSKIT-DEV-01|
-| 3.0.0   | BTSTACK version updated to 3.0<br>This update required that the example be used with ModusToolbox sofware 2.3 (with patch 2.3.1)|
-| 3.1.0   | Added new characteristics to the custom service |
-| 3.2.0   | Added support for 43439 kit |
-| 4.0.0   | Updated to support ModusToolbox&trade; v3.0 and BSPs v4.X
-| 4.1.0   | Added support for CY8CEVAL-062S2-CYW43022CUB
-| 4.2.0   | Added support for CY8CKIT-062S2-AI
-| 4.3.0   | Added support for CY8CEVAL-062S2-CYW955513SDM2WLIPA 
+Version | Description of change
+------- | ---------------------
+1.0.0   | New code example
+2.0.0   | Major update to support ModusToolbox&trade; software v2.2 <br> This version is not backward compatible with ModusToolbox&trade; software v2.1
+2.1.0   | Added support for CYSBSYSKIT-DEV-01
+3.0.0   | BTSTACK version updated to 3.0 <br> This update required that the example be used with ModusToolbox&trade; software 2.3 (with patch 2.3.1)|
+3.1.0   | Added new characteristics to the custom service
+3.2.0   | Added support for 43439 kit
+4.0.0   | Updated to support ModusToolbox&trade; v3.0 and BSPs v4.X
+4.1.0   | Added support for CY8CEVAL-062S2-CYW43022CUB
+4.2.0   | Added support for CY8CKIT-062S2-AI
+4.3.0   | Added support for CY8CEVAL-062S2-CYW955513SDM2WLIPA
+5.0.0   | Updated to support ModusToolbox&trade; v3.3 and btstack-integration latest-v5.X 
 <br>
-
 
 
 All referenced product or service names and trademarks are the property of their respective owners.
